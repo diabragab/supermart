@@ -314,8 +314,8 @@ function sha256(m){function r(n,x){return(x>>>n)|(x<<(32-n))}const K=[],H=[];let
 const pwHash=(id,p)=>sha256("bm:"+id+":"+p);
 const pwOk=(acc,id,p)=>acc.ph?acc.ph===pwHash(id,p):acc.pass===p;
 const CFG=window.BM_FIREBASE||{};
-const DB={on:!!(CFG.projectId&&CFG.apiKey),status:"local",last:null,busy:false};
-const dbUrl=p=>`https://firestore.googleapis.com/v1/projects/${encodeURIComponent(CFG.projectId)}/databases/(default)/documents/${p}?key=${encodeURIComponent(CFG.apiKey)}`;
+const DB={on:!!CFG.projectId,status:"local",last:null,busy:false};
+const dbUrl=p=>`https://firestore.googleapis.com/v1/projects/${encodeURIComponent(CFG.projectId)}/databases/(default)/documents/${p}?${CFG.apiKey?"key="+encodeURIComponent(CFG.apiKey):""}`;
 function fetchT(u,o){const c=new AbortController();const t=setTimeout(()=>c.abort(),7000);return fetch(u,Object.assign({signal:c.signal},o||{})).finally(()=>clearTimeout(t))}
 function toF(o){const f={};for(const k in o){const v=o[k];if(v==null)continue;if(typeof v==="number")f[k]=Number.isInteger(v)?{integerValue:String(v)}:{doubleValue:v};else if(typeof v==="boolean")f[k]={booleanValue:v};else if(Array.isArray(v))f[k]={arrayValue:{values:v.map(x=>({stringValue:String(x)}))}};else f[k]={stringValue:String(v)}}return{fields:f}}
 function fromF(d){const o={},f=d.fields||{};for(const k in f){const v=f[k];o[k]=v.stringValue!==undefined?v.stringValue:v.integerValue!==undefined?+v.integerValue:v.doubleValue!==undefined?v.doubleValue:v.booleanValue!==undefined?v.booleanValue:v.arrayValue?(v.arrayValue.values||[]).map(x=>x.stringValue):null}return o}
