@@ -1,0 +1,48 @@
+name: Build Android APK
+
+on:
+  push:
+    paths: ["android/**", ".github/workflows/android-apk.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: android-actions/setup-android@v3
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.9"
+
+      - name: Build release APK
+        working-directory: android
+        run: gradle assembleRelease --no-daemon
+
+      - name: Rename APK
+        run: cp android/app/build/outputs/apk/release/app-release.apk BM-Supermarket-demo.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: BM-Supermarket-demo-apk
+          path: BM-Supermarket-demo.apk
+
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="demo-v1.0.${{ github.run_number }}"
+          gh release create "$TAG" BM-Supermarket-demo.apk \
+            --target "${{ github.sha }}" \
+            --title "B&M Supermarket – Android demo (build ${{ github.run_number }})" \
+            --notes "نسخة عرض تجريبية من تطبيق B&M. نزّل ملف BM-Supermarket-demo.apk على الموبايل وثبّته (فعّل التثبيت من مصادر غير معروفة). حسابات العرض: admin / 1234 ، cashier / 1234 ، store / 1234 ، عميل 01000000000 / 1234."
