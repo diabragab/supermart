@@ -14,11 +14,25 @@ android {
         versionName "1.0-demo"
     }
 
+    signingConfigs {
+        // Demo builds only: a fixed debug-type key committed to the repo so every CI build
+        // has the same signature and installs as an update over the previous one.
+        // Replace with a private release key (kept out of git) before publishing to Google Play.
+        demo {
+            storeFile file('demo-debug.keystore')
+            storePassword 'android'
+            keyAlias 'androiddebugkey'
+            keyPassword 'android'
+        }
+    }
+
     buildTypes {
+        debug {
+            signingConfig signingConfigs.demo
+        }
         release {
             minifyEnabled false
-            // Demo build: signed with the debug key so it installs directly.
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.demo
         }
     }
     compileOptions {

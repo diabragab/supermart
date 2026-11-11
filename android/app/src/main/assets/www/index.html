@@ -588,7 +588,7 @@ function aDash(){
   const mx=Math.max(...days.map(x=>x.v),1);
   const low=S.products.filter(p=>p.st<=p.min).sort((a,b)=>a.st-b.st);
   const pct=ys?Math.round((ts-ys)/ys*100):0;
-  const profit=t.reduce((a,s)=>a+s.items.reduce((b,i)=>b+(i.p-(i.cost||i.p*.85))*i.q,0),0);
+  const profit=t.reduce((a,s)=>a+s.items.reduce((b,i)=>b+(i.p-(i.cost||i.p*.85))*i.q,0)-(s.disc||0),0);
   return aTop("لوحة التحكم")+`<main class="main">
    <div class="row" style="margin-bottom:12px"><div><div class="sm muted">${new Date().toLocaleDateString("ar-EG",{weekday:"long",day:"numeric",month:"long"})}</div><h2 style="font-size:20px;font-weight:900">صباح الخير، ${esc(S.session.name)} ☀️</h2></div></div>
    <div class="grid2 k4">
@@ -794,7 +794,7 @@ function aReports(){
   const from=startOf(rp-1);
   const ss=S.sales.filter(s=>s.t>=from&&!s.ret);
   const tot=ss.reduce((a,s)=>a+s.total,0);
-  const cost=ss.reduce((a,s)=>a+s.items.reduce((b,i)=>b+(i.cost||i.p*.85)*i.q,0),0)+ss.reduce((a,s)=>a+s.disc,0)*0;
+  const cost=ss.reduce((a,s)=>a+s.items.reduce((b,i)=>b+(i.cost||i.p*.85)*i.q,0),0);
   const days=[...Array(Math.min(rp,14))].map((_,i)=>{const d=Math.min(rp,14)-1-i;return{d,v:S.sales.filter(s=>s.t>=startOf(d)&&s.t<startOf(d-1)&&!s.ret).reduce((a,s)=>a+s.total,0)}});
   const mx=Math.max(...days.map(x=>x.v),1);
   const byCat={};const byP={};
