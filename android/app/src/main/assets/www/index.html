@@ -196,6 +196,7 @@ h1,h2,h3{margin:0}
 <div id="app"></div>
 <div id="ovs"></div>
 <div class="toast" id="toast" hidden></div>
+<script src="config.js"></script>
 <script>
 "use strict";
 /* ================= DATA ================= */
@@ -303,6 +304,67 @@ function vib(){try{navigator.vibrate&&navigator.vibrate(20)}catch(e){}}
 const stTag=s=>s<0?`<span class="tag t-red">ملغي</span>`:`<span class="tag ${["t-gold","t-blue","t-blue","t-green"][s]}">${ST_ICON[s]} ${ST[s]}</span>`;
 const stockTag=p=>p.st<=0?`<span class="tag t-red">نفد</span>`:p.st<=p.min?`<span class="tag t-gold">منخفض: ${qty(p,p.st)}</span>`:`<span class="tag t-green">${qty(p,p.st)}</span>`;
 
+/* ================= ONLINE ACCOUNTS DB (Firestore REST) ================= */
+function sha256(m){function r(n,x){return(x>>>n)|(x<<(32-n))}const K=[],H=[];let p=2;for(let c=0;c<64;p++){let ok=1;for(let i=2;i*i<=p;i++)if(p%i===0){ok=0;break}if(ok){if(c<8)H[c]=(Math.pow(p,1/2)*4294967296)|0;K[c++]=(Math.pow(p,1/3)*4294967296)|0}}
+  const b=unescape(encodeURIComponent(m));const w=[];const l=b.length*8;for(let i=0;i<b.length;i++)w[i>>2]|=b.charCodeAt(i)<<((3-i%4)*8);w[l>>5]|=0x80<<(24-l%32);w[((l+64>>9)<<4)+15]=l;
+  for(let j=0;j<w.length;j+=16){const W=[];let[a,bb,c,d,e,f,g,h]=H;for(let i=0;i<64;i++){if(i<16)W[i]=w[j+i]|0;else{const x=W[i-15],y=W[i-2];W[i]=(W[i-16]+(r(7,x)^r(18,x)^(x>>>3))+W[i-7]+(r(17,y)^r(19,y)^(y>>>10)))|0}
+   const t1=(h+(r(6,e)^r(11,e)^r(25,e))+((e&f)^(~e&g))+K[i]+W[i])|0,t2=((r(2,a)^r(13,a)^r(22,a))+((a&bb)^(a&c)^(bb&c)))|0;h=g;g=f;f=e;e=(d+t1)|0;d=c;c=bb;bb=a;a=(t1+t2)|0}
+   H[0]=(H[0]+a)|0;H[1]=(H[1]+bb)|0;H[2]=(H[2]+c)|0;H[3]=(H[3]+d)|0;H[4]=(H[4]+e)|0;H[5]=(H[5]+f)|0;H[6]=(H[6]+g)|0;H[7]=(H[7]+h)|0}
+  return H.map(x=>(x>>>0).toString(16).padStart(8,"0")).join("")}
+const pwHash=(id,p)=>sha256("bm:"+id+":"+p);
+const pwOk=(acc,id,p)=>acc.ph?acc.ph===pwHash(id,p):acc.pass===p;
+const CFG=window.BM_FIREBASE||{};
+const DB={on:!!(CFG.projectId&&CFG.apiKey),status:"local",last:null,busy:false};
+const dbUrl=p=>`https://firestore.googleapis.com/v1/projects/${encodeURIComponent(CFG.projectId)}/databases/(default)/documents/${p}?key=${encodeURIComponent(CFG.apiKey)}`;
+function fetchT(u,o){const c=new AbortController();const t=setTimeout(()=>c.abort(),7000);return fetch(u,Object.assign({signal:c.signal},o||{})).finally(()=>clearTimeout(t))}
+function toF(o){const f={};for(const k in o){const v=o[k];if(v==null)continue;if(typeof v==="number")f[k]=Number.isInteger(v)?{integerValue:String(v)}:{doubleValue:v};else if(typeof v==="boolean")f[k]={booleanValue:v};else if(Array.isArray(v))f[k]={arrayValue:{values:v.map(x=>({stringValue:String(x)}))}};else f[k]={stringValue:String(v)}}return{fields:f}}
+function fromF(d){const o={},f=d.fields||{};for(const k in f){const v=f[k];o[k]=v.stringValue!==undefined?v.stringValue:v.integerValue!==undefined?+v.integerValue:v.doubleValue!==undefined?v.doubleValue:v.booleanValue!==undefined?v.booleanValue:v.arrayValue?(v.arrayValue.values||[]).map(x=>x.stringValue):null}return o}
+async function dbList(col){const r=await fetchT(dbUrl(col)+"&pageSize=1000");if(!r.ok)throw new Error("HTTP "+r.status);const j=await r.json();return(j.documents||[]).map(fromF)}
+async function dbGet(col,id){const r=await fetchT(dbUrl(col+"/"+encodeURIComponent(id)));if(r.status===404)return null;if(!r.ok)throw new Error("HTTP "+r.status);return fromF(await r.json())}
+async function dbPut(col,id,o){const r=await fetchT(dbUrl(col+"/"+encodeURIComponent(id)),{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify(toF(o))});if(!r.ok)throw new Error("HTTP "+r.status)}
+const pubCust=c=>({phone:c.phone,name:c.name,addr:c.addr||[],pts:c.pts||0,since:c.since||Date.now(),ph:c.ph||pwHash(c.phone,c.pass)});
+const pubStaff=u=>({u:u.u,name:u.name,role:u.role,ph:u.ph||pwHash(u.u,u.pass)});
+function mergeCust(rc){const l=S.customers.find(c=>c.phone===rc.phone);if(l&&l.dirty)return;if(l){Object.assign(l,rc);delete l.pass}else S.customers.push(rc)}
+function mergeStaff(ru){const l=S.users.find(u=>u.u===ru.u);if(l&&l.dirty)return;if(l){Object.assign(l,ru);delete l.pass}else S.users.push(ru)}
+function markDirty(acc){acc.dirty=true;save();pushDirty()}
+async function pushDirty(){
+  if(!DB.on)return;
+  try{
+    for(const c of S.customers.filter(x=>x.dirty)){await dbPut("customers",c.phone,pubCust(c));c.ph=c.ph||pwHash(c.phone,c.pass);delete c.dirty}
+    for(const u of S.users.filter(x=>x.dirty)){await dbPut("staff",u.u,pubStaff(u));u.ph=u.ph||pwHash(u.u,u.pass);delete u.dirty}
+    DB.status="online";DB.last=Date.now();
+  }catch(e){DB.status="error"}
+  save();
+}
+async function syncAccounts(manual){
+  if(!DB.on){if(manual)toast("قاعدة البيانات الأونلاين مش متظبطة لسه");return}
+  if(DB.busy)return;DB.busy=true;
+  try{
+    await pushDirty();
+    const[cs,us]=await Promise.all([dbList("customers"),dbList("staff")]);
+    if(!us.length){ /* first run: upload demo accounts */
+      await Promise.all([...S.users.map(u=>dbPut("staff",u.u,pubStaff(u))),...S.customers.map(c=>dbPut("customers",c.phone,pubCust(c)))]);
+      S.users.forEach(u=>{u.ph=pubStaff(u).ph;delete u.pass});S.customers.forEach(c=>{c.ph=pubCust(c).ph;delete c.pass});
+    }else{cs.forEach(mergeCust);us.forEach(mergeStaff)}
+    DB.status="online";DB.last=Date.now();
+    if(manual)toast(`🔄 اتزامن: ${S.customers.length} عميل • ${S.users.length} موظف`);
+  }catch(e){DB.status="error";if(manual)toast("📴 مش قادر يوصل لقاعدة البيانات – شغال على الموبايل")}
+  DB.busy=false;save();
+  if(S.session&&["customers","staff","settings"].includes(R.tab))render();
+}
+/* fetch a single account fresh from the server before login / register */
+async function fetchAcc(id){
+  if(!DB.on)return;
+  try{
+    const isPhone=/^01\d{9}$/.test(id);
+    const d=await dbGet(isPhone?"customers":"staff",id);
+    if(d)(isPhone?mergeCust:mergeStaff)(d);
+    DB.status="online";return d;
+  }catch(e){DB.status="error"}
+}
+const dbCard=()=>`<div class="card row" style="margin-bottom:10px"><span style="font-size:22px">🗄️</span><div class="sp sm"><b>قاعدة بيانات الحسابات</b> ${dbBadge()}<div class="xs muted">${!DB.on?"الحسابات محفوظة على الجهاز ده بس":DB.last?"آخر مزامنة "+tm(DB.last):"Firebase Firestore"}</div></div>${DB.on?`<button class="btn sm" data-a="dbsync">🔄 تحديث</button>`:""}</div>`;
+const dbBadge=()=>!DB.on?`<span class="tag t-gray">💾 على الموبايل</span>`:DB.status==="online"?`<span class="tag t-green">☁️ أونلاين</span>`:DB.status==="error"?`<span class="tag t-red">📴 مفيش اتصال</span>`:`<span class="tag t-gold">⏳ جاري الاتصال</span>`;
+
 /* ================= ROUTER ================= */
 let R={tab:"home"};const hist=[];
 function go(tab,extra){hist.push(R);R=Object.assign({tab},extra||{});render();window.scrollTo(0,0)}
@@ -363,12 +425,13 @@ function loginView(){
   <div style="text-align:center;padding:18px"><button class="link" data-a="guest">تصفح المنتجات كزائر ←</button></div>
   <div class="xs muted" style="text-align:center;padding-bottom:20px">نسخة عرض تجريبية • كل البيانات وهمية</div></div>`;
 }
-function doLogin(u,p){
+async function doLogin(u,p){
   u=(u||"").trim();
+  if(DB.on&&u){toast("⏳ جاري التحقق…");await fetchAcc(/^01\d{9}$/.test(u)?u:u.toLowerCase())}
   const st=S.users.find(x=>x.u===u.toLowerCase());
-  if(st){if(st.pass!==p)return toast("كلمة السر غلط");S.session={type:"staff",u:st.u,name:st.name,role:st.role};R={tab:st.role==="cashier"?"pos":"dash"};hist.length=0;render();return toast(`أهلاً ${st.name} 👋`)}
+  if(st){if(!pwOk(st,st.u,p))return toast("كلمة السر غلط");S.session={type:"staff",u:st.u,name:st.name,role:st.role};R={tab:st.role==="cashier"?"pos":"dash"};hist.length=0;render();return toast(`أهلاً ${st.name} 👋`)}
   const c=S.customers.find(x=>x.phone===u);
-  if(c){if(c.pass!==p)return toast("كلمة السر غلط");S.session={type:"cust",phone:c.phone,name:c.name};const back=R.after;R={tab:back||"home"};hist.length=0;render();return toast(`أهلاً ${c.name.split(" ")[0]} 👋`)}
+  if(c){if(!pwOk(c,c.phone,p))return toast("كلمة السر غلط");S.session={type:"cust",phone:c.phone,name:c.name};const back=R.after;R={tab:back||"home"};hist.length=0;render();return toast(`أهلاً ${c.name.split(" ")[0]} 👋`)}
   toast("الحساب ده مش موجود");
 }
 
@@ -463,7 +526,7 @@ function checkoutSheet(){
     const items=S.cart.map(l=>{const p=prod(l.id);return{id:p.id,n:p.n,e:p.e,q:l.q,p:price(p)}});
     const sub=cartSub(),fee=type==="delivery"&&sub<300?15:0;
     const o={id:"BM-"+(++S.ordNo),t:Date.now(),phone:c.phone,name:c.name,addr:type==="delivery"?c.addr[addr]:"استلام من الفرع",type,pay,items,sub,fee,total:r2(sub+fee),st:0,note:s.querySelector("#note").value};
-    S.orders.push(o);S.cart=[];c.pts+=Math.floor(o.total/10);closeAll();hist.length=0;R={tab:"orders"};render();
+    S.orders.push(o);S.cart=[];c.pts+=Math.floor(o.total/10);markDirty(c);closeAll();hist.length=0;R={tab:"orders"};render();
     const d=sheet(`<div class="empty" style="padding:20px 0"><div>🎉</div><h2>تم استلام طلبك!</h2><p class="muted">رقم الطلب <b class="ltr">${o.id}</b><br>هنكلمك قريب لتأكيد الطلب.<br>كسبت <b>${Math.floor(o.total/10)}</b> نقطة 🎁</p><button class="btn pri blk" data-a="vieworder" data-v="${o.id}">تابع الطلب</button></div>`);
   };
 }
@@ -763,17 +826,17 @@ function invDetail(id){
   };sh.appendChild(b)}
 }
 function aCustomers(){
-  return aTop("العملاء")+`<main class="main"><div class="grid2" style="margin-bottom:10px"><div class="kpi"><div class="l">عدد العملاء</div><div class="v">${S.customers.length}</div></div><div class="kpi"><div class="l">نقاط مستحقة</div><div class="v">${fmt0(S.customers.reduce((a,c)=>a+c.pts,0))}</div></div></div>
+  return aTop("العملاء")+`<main class="main">${dbCard()}<div class="grid2" style="margin-bottom:10px"><div class="kpi"><div class="l">عدد العملاء</div><div class="v">${S.customers.length}</div></div><div class="kpi"><div class="l">نقاط مستحقة</div><div class="v">${fmt0(S.customers.reduce((a,c)=>a+c.pts,0))}</div></div></div>
   <div class="card list">${S.customers.map(c=>{const os=S.orders.filter(o=>o.phone===c.phone&&o.st>=0);return `<div class="li"><span class="av">${esc(c.name[0])}</span><div class="sp sm"><b>${esc(c.name)}</b><div class="xs muted ltr" style="text-align:right">${c.phone}</div><div class="xs muted">${os.length} طلب • ${fmt(os.reduce((a,o)=>a+o.total,0))}</div></div><span class="tag t-gold">🎁 ${c.pts}</span></div>`}).join("")}</div></main>`;
 }
 function aStaff(){
-  return aTop("الموظفين")+`<main class="main"><div class="card sm" style="background:var(--info-soft);border-color:transparent;margin-bottom:10px">🔐 كل موظف بيشوف بس الأقسام اللي مسموح له بيها. جرّب تدخل بحساب <b class="ltr">cashier</b> أو <b class="ltr">store</b>.</div>
+  return aTop("الموظفين")+`<main class="main">${dbCard()}<div class="card sm" style="background:var(--info-soft);border-color:transparent;margin-bottom:10px">🔐 كل موظف بيشوف بس الأقسام اللي مسموح له بيها. جرّب تدخل بحساب <b class="ltr">cashier</b> أو <b class="ltr">store</b>.</div>
   <div class="card list">${S.users.map(u=>`<div class="li"><span class="av">${esc(u.name.replace("أ. ","")[0])}</span><div class="sp sm"><b>${esc(u.name)}</b><div class="xs muted ltr" style="text-align:right">${u.u}</div></div><span class="tag ${u.role==="owner"?"t-gold":"t-blue"}">${ROLES[u.role]}</span></div>`).join("")}</div>
   ${S.session.role==="owner"?`<button class="fab" data-a="newstaff">+</button>`:""}</main>`;
 }
 function newStaff(){
   const s=sheet(`<h2>موظف جديد</h2><div class="col"><div><label class="lbl">الاسم</label><input id="s_n"></div><div><label class="lbl">اسم المستخدم</label><input id="s_u" class="ltr"></div><div><label class="lbl">كلمة السر</label><input id="s_p" value="1234"></div><div><label class="lbl">الصلاحية</label><select id="s_r">${Object.entries(ROLES).filter(([k])=>k!=="owner").map(([k,n])=>`<option value="${k}">${n}</option>`).join("")}</select></div><button class="btn pri blk" id="sok">إضافة</button></div>`);
-  s.querySelector("#sok").onclick=()=>{const n=s.querySelector("#s_n").value.trim(),u=s.querySelector("#s_u").value.trim().toLowerCase();if(!n||!u)return toast("كمّل البيانات");if(S.users.some(x=>x.u===u))return toast("اسم المستخدم موجود");S.users.push({u,name:n,pass:s.querySelector("#s_p").value,role:s.querySelector("#s_r").value});closeSheet();render();toast("✓ اتضاف الموظف")};
+  s.querySelector("#sok").onclick=()=>{const n=s.querySelector("#s_n").value.trim(),u=s.querySelector("#s_u").value.trim().toLowerCase();if(!n||!u)return toast("كمّل البيانات");if(S.users.some(x=>x.u===u))return toast("اسم المستخدم موجود");const nu={u,name:n,pass:s.querySelector("#s_p").value,role:s.querySelector("#s_r").value};S.users.push(nu);markDirty(nu);closeSheet();render();toast("✓ اتضاف الموظف")};
 }
 function aShift(){
   const sh=S.shift;
@@ -787,7 +850,7 @@ function aShift(){
    `<div class="card"><div class="empty" style="padding:10px"><div>💰</div><b>الوردية مقفولة</b></div><label class="lbl">الرصيد الافتتاحي (فكة)</label><input id="float" type="number" value="500"><button class="btn pri blk" style="margin-top:10px" data-a="openshift">فتح وردية جديدة</button></div>`}</main>`;
 }
 function aSettings(){
-  return aTop("الإعدادات")+`<main class="main"><div class="card col"><b>بيانات المتجر</b><div><label class="lbl">اسم المتجر</label><input value="B&M سوبر ماركت"></div><div><label class="lbl">التليفون</label><input value="0223456789" class="ltr"></div><div><label class="lbl">رسوم التوصيل / حد التوصيل المجاني</label><div class="row"><input value="15"><input value="300"></div></div></div>
+  return aTop("الإعدادات")+`<main class="main">${dbCard()}<div class="card col"><b>بيانات المتجر</b><div><label class="lbl">اسم المتجر</label><input value="B&M سوبر ماركت"></div><div><label class="lbl">التليفون</label><input value="0223456789" class="ltr"></div><div><label class="lbl">رسوم التوصيل / حد التوصيل المجاني</label><div class="row"><input value="15"><input value="300"></div></div></div>
   <div class="card col" style="margin-top:12px"><b>🖨️ طابعة الفواتير</b><div class="seg"><button class="${S.printer==="58"?"on":""}" data-a="printer" data-v="58">58 مم</button><button class="${S.printer==="80"?"on":""}" data-a="printer" data-v="80">80 مم</button></div><button class="btn" data-a="print">طباعة صفحة تجربة</button></div>
   ${themeCard()}
   <div class="card col" style="margin-top:12px"><b>بيانات العرض</b><p class="sm muted" style="margin:0">رجّع كل البيانات التجريبية زي ما كانت أول مرة.</p><button class="btn red" data-a="reset">إعادة ضبط بيانات العرض</button></div></main>`;
@@ -802,8 +865,8 @@ const A={
   lmode:v=>{loginMode=v;render()},
   login:()=>doLogin($("#l_user").value,$("#l_pass").value),
   quick:v=>doLogin(v,"1234"),
-  register:()=>{const n=$("#l_name").value.trim(),u=$("#l_user").value.trim(),p=$("#l_pass").value;if(!n||!/^01\d{9}$/.test(u)||p.length<4)return toast("اكتب الاسم ورقم موبايل صحيح (11 رقم) وكلمة سر 4 حروف على الأقل");if(S.customers.some(c=>c.phone===u))return toast("الرقم ده متسجل قبل كده");
-    sheet(`<h2>تأكيد رقم الموبايل</h2><p class="sm muted">بعتنالك كود على <span class="ltr">${u}</span> (للعرض: الكود هو <b>1234</b>)</p><input id="otp" inputmode="numeric" class="ltr" style="text-align:center;font-size:24px;letter-spacing:10px" maxlength="4"><button class="btn pri blk" style="margin-top:12px" id="otpok">تأكيد</button>`).querySelector("#otpok").onclick=()=>{if($("#otp").value!=="1234")return toast("الكود غلط");S.customers.push({phone:u,pass:p,name:n,addr:["القاهرة – عنوان تجريبي"],pts:50,since:Date.now()});closeAll();loginMode="login";doLogin(u,p);toast("🎉 أهلاً بيك! هدية 50 نقطة")}},
+  register:async()=>{const n=$("#l_name").value.trim(),u=$("#l_user").value.trim(),p=$("#l_pass").value;if(!n||!/^01\d{9}$/.test(u)||p.length<4)return toast("اكتب الاسم ورقم موبايل صحيح (11 رقم) وكلمة سر 4 حروف على الأقل");if(S.customers.some(c=>c.phone===u))return toast("الرقم ده متسجل قبل كده");const ex=DB.on?await fetchAcc(u):null;if(ex)return toast("الرقم ده متسجل قبل كده");
+    sheet(`<h2>تأكيد رقم الموبايل</h2><p class="sm muted">بعتنالك كود على <span class="ltr">${u}</span> (للعرض: الكود هو <b>1234</b>)</p><input id="otp" inputmode="numeric" class="ltr" style="text-align:center;font-size:24px;letter-spacing:10px" maxlength="4"><button class="btn pri blk" style="margin-top:12px" id="otpok">تأكيد</button>`).querySelector("#otpok").onclick=()=>{if($("#otp").value!=="1234")return toast("الكود غلط");const nc={phone:u,pass:p,name:n,addr:["القاهرة – عنوان تجريبي"],pts:50,since:Date.now()};S.customers.push(nc);markDirty(nc);closeAll();loginMode="login";doLogin(u,p);toast("🎉 أهلاً بيك! هدية 50 نقطة")}},
   guest:()=>{guest=true;R={tab:"home"};S.session=null;render()},
   tologin:()=>{guest=false;S.session=null;R={tab:"login"};loginMode="login";render()},
   logout:()=>{guest=false;S.session=null;R={tab:"login"};hist.length=0;closeAll();render()},
@@ -817,7 +880,7 @@ const A={
   custcancel:v=>{const o=S.orders.find(x=>x.id===v);if(o.st!==0)return toast("الطلب بدأ تجهيزه ومينفعش يتلغي");o.st=-1;render();toast("تم إلغاء الطلب")},
   reorder:v=>{const o=S.orders.find(x=>x.id===v);o.items.forEach(i=>{const l=S.cart.find(x=>x.id===i.id);if(l)l.q+=i.q;else S.cart.push({id:i.id,q:i.q})});tabTo("cart");toast("✓ المنتجات اتضافت للسلة")},
   qs:v=>{$("#q").value=v;searchResults(v)},
-  addaddr:()=>{const s=sheet(`<h2>عنوان جديد</h2><input id="na" placeholder="المنطقة – الشارع – رقم العمارة – الدور"><button class="btn pri blk" style="margin-top:12px" id="naok">حفظ</button>`);s.querySelector("#naok").onclick=()=>{const v=s.querySelector("#na").value.trim();if(!v)return;me().addr.push(v);closeSheet();render()}},
+  addaddr:()=>{const s=sheet(`<h2>عنوان جديد</h2><input id="na" placeholder="المنطقة – الشارع – رقم العمارة – الدور"><button class="btn pri blk" style="margin-top:12px" id="naok">حفظ</button>`);s.querySelector("#naok").onclick=()=>{const v=s.querySelector("#na").value.trim();if(!v)return;me().addr.push(v);markDirty(me());closeSheet();render()}},
   /* admin */
   aorder:()=>tabTo("orders"),
   pcat:v=>{posCat=v;posQ="";$("#tiles").innerHTML=posTiles();document.querySelectorAll("[data-a=pcat]").forEach(b=>b.classList.toggle("on",b.dataset.v===v))},
@@ -846,6 +909,7 @@ const A={
   export:()=>toast("⬇️ التقرير اتصدّر Excel – وضع العرض"),
   viewinv:v=>invDetail(v),
   newstaff:()=>newStaff(),
+  dbsync:()=>syncAccounts(true),
   cashio:v=>{const s=sheet(`<h2>${v==="in"?"إيداع نقدية":"سحب / مصروف"}</h2><label class="lbl">المبلغ</label><input id="cv" type="number" inputmode="decimal"><label class="lbl" style="margin-top:8px">السبب</label><input placeholder="${v==="in"?"فكة":"مصاريف نظافة"}"><button class="btn pri blk" style="margin-top:12px" id="cok">حفظ</button>`);s.querySelector("#cok").onclick=()=>{const a=+s.querySelector("#cv").value;if(!a)return;S.shift[v==="in"?"cashIn":"cashOut"]+=a;closeSheet();render();toast("✓ اتسجل")}},
   closeshift:v=>{const c=+$("#counted").value;if(!$("#counted").value)return toast("اكتب النقدية الفعلية");const d=r2(c-+v);S.shift.open=false;render();sheet(`<div class="empty" style="padding:10px 0"><div>📋</div><h2>تقرير قفل الوردية</h2></div><div class="card"><div class="tot"><span>المتوقع</span><b>${fmt(+v)}</b></div><div class="tot"><span>الفعلي</span><b>${fmt(c)}</b></div><div class="tot big"><span>${d===0?"مظبوط ✓":d>0?"زيادة":"عجز"}</span><span style="color:${d<0?"var(--sale)":"var(--accent)"}">${fmt(Math.abs(d))}</span></div></div><button class="btn pri blk" style="margin-top:12px" data-a="print">🖨️ طباعة التقرير</button>`)},
   openshift:()=>{S.shift={open:true,float:+$("#float").value||0,start:Date.now(),cashIn:0,cashOut:0};render();toast("✓ الوردية اتفتحت")},
@@ -871,6 +935,8 @@ document.addEventListener("click",e=>{},true);
 const _render=render;
 render=function(){_render();if(R.tab==="search")setTimeout(()=>{const q=$("#q");if(q){searchResults(q.value);q.focus()}},0)};
 render();
+syncAccounts();
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)syncAccounts()});
 setTimeout(()=>{const s=$("#splash");s.style.opacity=0;setTimeout(()=>s.remove(),400)},900);
 </script>
 </body>

@@ -27,3 +27,9 @@ The APK is built by GitHub Actions (`.github/workflows/android-apk.yml`) on ever
 Locally (needs Android SDK 34): `cd android && gradle assembleRelease`.
 
 The UI is a single offline HTML/JS app at `android/app/src/main/assets/www/index.html` loaded in a native WebView (`MainActivity.java`).
+
+### Online accounts (Firebase Firestore)
+
+Customer and staff accounts can sync through a free Firebase Firestore database so they work across phones.
+Put the project's `projectId` and web `apiKey` in `android/app/src/main/assets/www/config.js`. With it empty, accounts stay on the device.
+Passwords are stored as SHA-256 hashes. The database must be in Firestore *test mode* (demo only; test-mode rules expire after 30 days).
