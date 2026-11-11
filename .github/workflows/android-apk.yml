@@ -30,11 +30,6 @@ jobs:
       - name: Rename APK
         run: cp android/app/build/outputs/apk/release/app-release.apk BM-Supermarket-demo.apk
 
-      - uses: actions/upload-artifact@v4
-        with:
-          name: BM-Supermarket-demo-apk
-          path: BM-Supermarket-demo.apk
-
       - name: Publish GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -44,3 +39,10 @@ jobs:
             --target "${{ github.sha }}" \
             --title "B&M Supermarket – Android demo (build ${{ github.run_number }})" \
             --notes "نسخة عرض تجريبية من تطبيق B&M. نزّل ملف BM-Supermarket-demo.apk على الموبايل وثبّته (فعّل التثبيت من مصادر غير معروفة). حسابات العرض: admin / 1234 ، cashier / 1234 ، store / 1234 ، عميل 01000000000 / 1234."
+
+      - uses: actions/upload-artifact@v4
+        timeout-minutes: 5
+        continue-on-error: true
+        with:
+          name: BM-Supermarket-demo-apk
+          path: BM-Supermarket-demo.apk
