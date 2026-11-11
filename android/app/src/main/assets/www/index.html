@@ -184,6 +184,55 @@ h1,h2,h3{margin:0}
 .splash{position:fixed;inset:0;z-index:99;background:var(--deep);display:grid;place-items:center;transition:opacity .4s}
 .splash .logo{font-size:44px;padding:8px 24px;border-radius:20px}
 .av{width:44px;height:44px;border-radius:50%;background:var(--gold-soft);color:var(--warn);display:grid;place-items:center;font-weight:900;font-size:18px;flex:none}
+/* ===== motion ===== */
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}}
+@keyframes pop{0%{opacity:0;transform:scale(.85)}70%{transform:scale(1.04)}100%{opacity:1;transform:none}}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+@keyframes bump{0%{transform:scale(1)}30%{transform:scale(1.5)}60%{transform:scale(.9)}100%{transform:scale(1)}}
+@keyframes wiggle{0%,100%{transform:rotate(0)}20%{transform:rotate(-14deg)}40%{transform:rotate(12deg)}60%{transform:rotate(-8deg)}80%{transform:rotate(5deg)}}
+@keyframes shine{from{transform:translateX(120%) skewX(-20deg)}to{transform:translateX(-220%) skewX(-20deg)}}
+@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes spinSlow{to{transform:rotate(360deg)}}
+@keyframes glow{0%,100%{box-shadow:0 0 0 0 rgba(244,180,0,.55),var(--shadow)}50%{box-shadow:0 0 0 12px rgba(244,180,0,0),var(--shadow)}}
+.main{animation:fadeUp .3s ease-out}
+.anim>*{animation:pop .42s cubic-bezier(.2,.8,.3,1.2) both}
+.anim>*:nth-child(1){animation-delay:.02s}.anim>*:nth-child(2){animation-delay:.06s}.anim>*:nth-child(3){animation-delay:.1s}.anim>*:nth-child(4){animation-delay:.14s}.anim>*:nth-child(5){animation-delay:.18s}.anim>*:nth-child(6){animation-delay:.22s}.anim>*:nth-child(7){animation-delay:.26s}.anim>*:nth-child(8){animation-delay:.3s}.anim>*:nth-child(n+9){animation-delay:.34s}
+.pc .off{animation:pulse 1.6s ease-in-out infinite}
+.pc:active{transform:scale(.97)}
+.pc .add{transition:transform .15s}.pc .add:active{transform:scale(.8)}
+.bnav .dot.bump{animation:bump .5s ease}
+.cat span{transition:transform .2s}.cat:active span{transform:scale(.9) rotate(-6deg)}
+.flyer{position:fixed;z-index:95;font-size:34px;pointer-events:none}
+.conf{position:fixed;top:-20px;z-index:96;width:10px;height:14px;border-radius:3px;pointer-events:none}
+/* carousel */
+.carousel{position:relative;overflow:hidden;border-radius:20px;margin-top:14px}
+.slides{display:flex;transition:transform .55s cubic-bezier(.6,0,.2,1)}
+.slides .banner{flex:0 0 100%;border-radius:0}
+.banner::after{content:"";position:absolute;top:0;bottom:0;width:40%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.22),transparent);animation:shine 3.5s ease-in-out infinite}
+.banner .big{animation:floaty 2.6s ease-in-out infinite}
+.banner.b2{background:linear-gradient(135deg,#f4b400,#e0701b)}
+.banner.b2 .btn{background:#0c4a26;color:#fff}
+.banner.b3{background:linear-gradient(135deg,#2563eb,#0c4a26)}
+.dots{position:absolute;bottom:8px;right:0;left:0;display:flex;justify-content:center;gap:5px;z-index:2}
+.dots i{width:7px;height:7px;border-radius:9px;background:rgba(255,255,255,.5);transition:all .3s}
+.dots i.on{width:20px;background:#fff}
+/* wheel */
+.wheel-fab{position:fixed;bottom:84px;left:16px;z-index:26;width:62px;height:62px;border-radius:50%;background:radial-gradient(circle at 30% 30%,#ffd54a,#f4b400 60%,#d48f00);font-size:32px;display:grid;place-items:center;animation:glow 1.8s infinite}
+.wheel-fab span{display:inline-block;animation:spinSlow 6s linear infinite}
+.wheel-fab b{position:absolute;top:-8px;right:-6px;background:var(--sale);color:#fff;font-size:10.5px;border-radius:99px;padding:0 6px;line-height:18px;animation:wiggle 1.6s ease-in-out infinite}
+.wheel-wrap{position:relative;width:300px;max-width:84vw;aspect-ratio:1;margin:6px auto 14px}
+.wheel-wrap svg{width:100%;height:100%;display:block;filter:drop-shadow(0 10px 22px rgba(0,0,0,.25))}
+.wheel-rot{transform-origin:150px 150px;transition:transform 5.2s cubic-bezier(.12,.75,.12,1)}
+.pointer{position:absolute;top:-10px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:16px solid transparent;border-right:16px solid transparent;border-top:30px solid var(--sale);filter:drop-shadow(0 3px 3px rgba(0,0,0,.3));z-index:2}
+.pointer.tick{animation:wiggle .15s}
+.hub{position:absolute;inset:0;margin:auto;width:64px;height:64px;border-radius:50%;background:#fff;border:5px solid var(--gold);display:grid;place-items:center;font-weight:900;color:var(--deep);font-size:13px;box-shadow:0 4px 10px rgba(0,0,0,.25);direction:ltr}
+.coupon{display:flex;align-items:center;gap:10px;border:2px dashed var(--gold);background:var(--gold-soft);border-radius:14px;padding:10px 12px}
+.prize{font-size:30px;font-weight:900;color:var(--accent);animation:pop .5s cubic-bezier(.2,.8,.3,1.4)}
+.splash .logo{animation:pop .7s cubic-bezier(.2,.8,.3,1.5)}
+.splash .cartgo{font-size:40px;display:inline-block;animation:drive 1.3s ease-in-out .2s both}
+@keyframes drive{from{transform:translateX(160px);opacity:0}30%{opacity:1}to{transform:translateX(-160px);opacity:0}}
+.splash .tag2{color:#cfe9d8;margin-top:12px;font-weight:700;animation:fadeUp .5s .35s both}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 @media (min-width:760px){
   .main{max-width:1100px;margin:0 auto;width:100%}
   .cats{grid-template-columns:repeat(8,1fr)}
@@ -192,7 +241,7 @@ h1,h2,h3{margin:0}
 </style>
 </head>
 <body>
-<div class="splash" id="splash"><div style="text-align:center"><div class="logo">B<i>&amp;</i>M</div><div style="color:#cfe9d8;margin-top:12px;font-weight:700">سوبر ماركت</div></div></div>
+<div class="splash" id="splash"><div style="text-align:center;overflow:hidden"><div class="logo">B<i>&amp;</i>M</div><div class="tag2">سوبر ماركت • كل احتياجات بيتك</div><div style="height:56px;margin-top:10px"><span class="cartgo">🛒</span></div></div></div>
 <div id="app"></div>
 <div id="ovs"></div>
 <div class="toast" id="toast" hidden></div>
@@ -431,7 +480,7 @@ async function doLogin(u,p){
   const st=S.users.find(x=>x.u===u.toLowerCase());
   if(st){if(!pwOk(st,st.u,p))return toast("كلمة السر غلط");S.session={type:"staff",u:st.u,name:st.name,role:st.role};R={tab:st.role==="cashier"?"pos":"dash"};hist.length=0;render();return toast(`أهلاً ${st.name} 👋`)}
   const c=S.customers.find(x=>x.phone===u);
-  if(c){if(!pwOk(c,c.phone,p))return toast("كلمة السر غلط");S.session={type:"cust",phone:c.phone,name:c.name};const back=R.after;R={tab:back||"home"};hist.length=0;render();return toast(`أهلاً ${c.name.split(" ")[0]} 👋`)}
+  if(c){if(!pwOk(c,c.phone,p))return toast("كلمة السر غلط");if(S.pendingPts){c.pts+=S.pendingPts;S.pendingPts=0;markDirty(c)}S.session={type:"cust",phone:c.phone,name:c.name};const back=R.after;R={tab:back||"home"};hist.length=0;render();return toast(`أهلاً ${c.name.split(" ")[0]} 👋`)}
   toast("الحساب ده مش موجود");
 }
 
@@ -459,23 +508,28 @@ function custHome(){
   `<main class="main">
    <div class="search" data-a="tab" data-v="search"><span>🔍</span><input placeholder="ابحث عن منتج… رز، زيت، لبن" readonly></div>
    ${!S.session?`<div class="card row" style="margin-top:12px;background:var(--gold-soft);border-color:transparent"><span style="font-size:24px">👋</span><div class="sp sm b">سجّل دخولك عشان تطلب وتتابع طلباتك</div><button class="btn sm gold" data-a="tologin">دخول</button></div>`:""}
-   <div class="banner" style="margin-top:14px"><h3>عروض الأسبوع 🔥</h3><p>خصومات لحد 20% على الزيت والفراخ والحلويات</p><button class="btn" data-a="go" data-v="cat" data-x="offers">تسوق العروض</button><div class="big">🛍️</div></div>
+   <div class="carousel" id="car"><div class="slides">
+    <div class="banner"><h3>عروض الأسبوع 🔥</h3><p>خصومات لحد 20% على الزيت والفراخ والحلويات</p><button class="btn" data-a="go" data-v="cat" data-x="offers">تسوق العروض</button><div class="big">🛍️</div></div>
+    <div class="banner b2"><h3>لف العجلة واكسب! 🎡</h3><p>خصم لحد 50 ج.م أو توصيل مجاني – لفّة كل يوم</p><button class="btn" data-a="wheel">لف دلوقتي</button><div class="big">🎁</div></div>
+    <div class="banner b3"><h3>توصيل في 45 دقيقة 🛵</h3><p>ومجاني للطلبات فوق 300 ج.م</p><button class="btn" data-a="tab" data-v="cats">ابدأ التسوق</button><div class="big">🛵</div></div>
+   </div><div class="dots"><i class="on"></i><i></i><i></i></div></div>
+   ${S.coupon?`<div class="coupon" style="margin-top:10px"><span style="font-size:24px">🎟️</span><div class="sp sm"><b>عندك كوبون: ${esc(S.coupon.l)}</b><div class="xs muted">هيتطبق أوتوماتيك في السلة • صالح النهارده</div></div></div>`:""}
    <div class="card row" style="margin-top:10px;padding:10px 14px"><span style="font-size:22px">🛵</span><div class="sp sm"><b>توصيل مجاني</b> للطلبات فوق 300 ج.م • التوصيل خلال 45 دقيقة</div></div>
    <div class="sec"><h2>الأقسام</h2><a data-a="tab" data-v="cats">الكل</a></div>
-   <div class="cats">${CATS.map(([k,n,e])=>`<button class="cat" data-a="go" data-v="cat" data-x="${k}"><span>${e}</span>${n}</button>`).join("")}</div>
+   <div class="cats anim">${CATS.map(([k,n,e])=>`<button class="cat" data-a="go" data-v="cat" data-x="${k}"><span>${e}</span>${n}</button>`).join("")}</div>
    <div class="sec"><h2>عروض اليوم</h2><a data-a="go" data-v="cat" data-x="offers">عرض الكل</a></div>
-   <div class="hscroll">${offers.map(pcard).join("")}</div>
+   <div class="hscroll anim">${offers.map(pcard).join("")}</div>
    <div class="sec"><h2>الأكثر مبيعاً</h2></div>
-   <div class="pgrid">${best.map(pcard).join("")}</div>
-  </main>`;
+   <div class="pgrid anim">${best.map(pcard).join("")}</div>
+  </main>${spunToday()?"":`<button class="wheel-fab" data-a="wheel"><span>🎡</span><b>اكسب</b></button>`}`;
 }
 function custCats(){
-  return topbar("الأقسام")+`<main class="main"><div class="col">${CATS.map(([k,n,e])=>{const c=S.products.filter(p=>p.c===k).length;return `<button class="card row" data-a="go" data-v="cat" data-x="${k}"><span class="ico" style="font-size:28px">${e}</span><div class="sp" style="text-align:start"><b>${n}</b><div class="xs muted">${c} منتج</div></div><span class="muted">←</span></button>`}).join("")}</div></main>`;
+  return topbar("الأقسام")+`<main class="main"><div class="col anim">${CATS.map(([k,n,e])=>{const c=S.products.filter(p=>p.c===k).length;return `<button class="card row" data-a="go" data-v="cat" data-x="${k}"><span class="ico" style="font-size:28px">${e}</span><div class="sp" style="text-align:start"><b>${n}</b><div class="xs muted">${c} منتج</div></div><span class="muted">←</span></button>`}).join("")}</div></main>`;
 }
 function custCat(){
   const k=R.x;const list=k==="offers"?S.products.filter(p=>p.offer):S.products.filter(p=>p.c===k);
   const name=k==="offers"?"العروض 🔥":CATS.find(c=>c[0]===k)[1];
-  return topbar(name)+`<main class="main"><div class="chips" style="margin-bottom:12px"><button class="chip ${k==="offers"?"on":""}" data-a="rgo" data-v="cat" data-x="offers">🔥 العروض</button>${CATS.map(([c,n])=>`<button class="chip ${c===k?"on":""}" data-a="rgo" data-v="cat" data-x="${c}">${n}</button>`).join("")}</div><div class="pgrid">${list.map(pcard).join("")}</div></main>`;
+  return topbar(name)+`<main class="main"><div class="chips" style="margin-bottom:12px"><button class="chip ${k==="offers"?"on":""}" data-a="rgo" data-v="cat" data-x="offers">🔥 العروض</button>${CATS.map(([c,n])=>`<button class="chip ${c===k?"on":""}" data-a="rgo" data-v="cat" data-x="${c}">${n}</button>`).join("")}</div><div class="pgrid anim">${list.map(pcard).join("")}</div></main>`;
 }
 function custSearch(){
   return topbar("البحث")+`<main class="main"><div class="search"><span>🔍</span><input id="q" placeholder="اكتب اسم المنتج" autocomplete="off"></div><div id="qr" style="margin-top:12px"></div></main>`;
@@ -484,7 +538,7 @@ function searchResults(q){
   q=q.trim();const el=$("#qr");if(!el)return;
   if(!q){el.innerHTML=`<div class="sm muted b" style="margin-bottom:8px">عمليات بحث شائعة</div><div class="chips" style="flex-wrap:wrap">${["لبن","رز","زيت","فراخ","عصير","جبنة","شاي"].map(s=>`<button class="chip" data-a="qs" data-v="${s}">${s}</button>`).join("")}</div>`;return}
   const r=S.products.filter(p=>p.n.includes(q)||p.bc.includes(q));
-  el.innerHTML=r.length?`<div class="pgrid">${r.map(pcard).join("")}</div>`:`<div class="empty"><div>🔎</div>مفيش نتايج لـ "${esc(q)}"</div>`;
+  el.innerHTML=r.length?`<div class="pgrid anim">${r.map(pcard).join("")}</div>`:`<div class="empty"><div>🔎</div>مفيش نتايج لـ "${esc(q)}"</div>`;
 }
 function prodSheet(id){
   const p=prod(id);let q=p.kg?1:1;
@@ -495,16 +549,20 @@ function prodSheet(id){
    ${p.st>0?`<div class="row"><div class="step"><button data-q="-">−</button><b id="pq">${qty(p,q)}</b><button data-q="+">+</button></div><button class="btn pri sp" id="padd" style="padding:12px">أضف للسلة • <span id="pt">${fmt(price(p)*q)}</span></button></div>`:`<button class="btn blk" disabled>غير متوفر</button>`}`);
   const step=p.kg?.25:1;
   s.querySelectorAll("[data-q]").forEach(b=>b.onclick=()=>{q=Math.max(step,r2(q+(b.dataset.q==="+"?step:-step)));s.querySelector("#pq").textContent=qty(p,q);s.querySelector("#pt").textContent=fmt(price(p)*q)});
-  const a=s.querySelector("#padd");if(a)a.onclick=()=>{addCart(p.id,q);closeSheet()};
+  const a=s.querySelector("#padd");if(a)a.onclick=()=>{const r=s.querySelector(".sheet>div:nth-child(2)").getBoundingClientRect();if(addCart(p.id,q)!==false){closeSheet();flyToCart(p.e,r)}};
 }
-function addCart(id,q){const p=prod(id);q=q||(p.kg?1:1);const l=S.cart.find(x=>x.id===id);const cur=l?l.q:0;if(cur+q>p.st)return toast(`⚠️ المتاح من ${p.n}: ${qty(p,p.st)} بس`);if(l)l.q=r2(l.q+q);else S.cart.push({id,q});vib();toast(`✓ اتضاف للسلة: ${p.n}`);render()}
+function addCart(id,q){const p=prod(id);q=q||(p.kg?1:1);const l=S.cart.find(x=>x.id===id);const cur=l?l.q:0;if(cur+q>p.st){toast(`⚠️ المتاح من ${p.n}: ${qty(p,p.st)} بس`);return false}if(l)l.q=r2(l.q+q);else S.cart.push({id,q});vib();toast(`✓ اتضاف للسلة: ${p.n}`);render()}
+function couponDisc(sub){const c=S.coupon;if(!c)return 0;if(c.t==="pct")return r2(Math.min(sub*c.v/100,100));if(c.t==="amt")return sub>=(c.min||150)?Math.min(c.v,sub):0;return 0}
+function cartTotals(delivery){const sub=cartSub();let fee=delivery&&sub<300?15:0;if(S.coupon&&S.coupon.t==="ship")fee=0;const disc=couponDisc(sub);return{sub,fee,disc,total:r2(Math.max(0,sub+fee-disc))}}
+function totalsHTML(t){const c=S.coupon;return `<div class="tot"><span>المجموع</span><b>${fmt(t.sub)}</b></div><div class="tot"><span>التوصيل</span><b>${t.fee?fmt(t.fee):"مجاني"+(c&&c.t==="ship"?" 🎡":"")}</b></div>${t.disc?`<div class="tot" style="color:var(--sale)"><span>🎡 خصم العجلة (${esc(c.l)})</span><b>- ${fmt(t.disc)}</b></div>`:""}${c&&c.t==="amt"&&!t.disc?`<div class="xs" style="color:var(--warn)">🎟️ كوبون ${esc(c.l)} بيتفعل للطلبات فوق ${c.min||150} ج.م</div>`:""}<div class="tot big"><span>الإجمالي</span><span>${fmt(t.total)}</span></div>`}
 function custCart(){
   if(!S.cart.length)return topbar("السلة")+`<main class="main"><div class="empty"><div>🛒</div><b>السلة فاضية</b><p>ابدأ التسوق وضيف منتجاتك</p><button class="btn pri" data-a="tab" data-v="home">تسوق دلوقتي</button></div></main>`;
   const sub=cartSub(),fee=sub>=300?0:15;
   return topbar(`السلة (${cartCount()})`,{right:`<button class="ib" data-a="clearcart">🗑️</button>`})+`<main class="main">
    <div class="card list">${S.cart.map((l,i)=>{const p=prod(l.id);return `<div class="li"><span class="ico">${p.e}</span><div class="sp" style="min-width:0"><b class="sm">${esc(p.n)}</b><div class="xs muted">${fmt(price(p))} ${p.kg?"/ كجم":""}</div><b style="color:var(--accent)">${fmt(price(p)*l.q)}</b></div><div class="step"><button data-a="cq" data-v="${i}" data-x="1">+</button><b class="sm">${qty(p,l.q)}</b><button data-a="cq" data-v="${i}" data-x="-1">−</button></div></div>`}).join("")}</div>
    ${sub<300?`<div class="card sm" style="margin-top:10px;background:var(--gold-soft);border-color:transparent">🛵 ضيف بـ <b>${fmt(300-sub)}</b> كمان وخد التوصيل مجاناً</div>`:`<div class="card sm" style="margin-top:10px;background:var(--soft);border-color:transparent">🎉 طلبك له توصيل مجاني</div>`}
-   <div class="card" style="margin-top:10px"><div class="tot"><span>المجموع</span><b>${fmt(sub)}</b></div><div class="tot"><span>التوصيل</span><b>${fee?fmt(fee):"مجاني"}</b></div><div class="tot big"><span>الإجمالي</span><span>${fmt(sub+fee)}</span></div></div>
+   ${S.coupon?`<div class="coupon" style="margin-top:10px"><span style="font-size:24px">🎟️</span><div class="sp sm"><b>كوبون العجلة: ${esc(S.coupon.l)}</b><div class="xs muted">اتطبق على طلبك</div></div></div>`:spunToday()?"":`<button class="coupon" style="margin-top:10px;width:100%;text-align:start" data-a="wheel"><span style="font-size:24px">🎡</span><div class="sp sm"><b>لف العجلة واكسب خصم على الطلب ده!</b></div><span class="link">لف ←</span></button>`}
+   <div class="card" style="margin-top:10px">${totalsHTML(cartTotals(true))}</div>
    <button class="btn pri blk" style="margin-top:14px" data-a="checkout">إتمام الطلب ←</button></main>`;
 }
 function checkoutSheet(){
@@ -517,7 +575,7 @@ function checkoutSheet(){
    <div><span class="lbl">ملاحظات (اختياري)</span><input id="note" placeholder="مثلاً: رن الجرس مرتين"></div>
    <div class="card" id="sum"></div>
    <button class="btn pri blk" id="place">تأكيد الطلب</button></div>`);
-  const upd=()=>{const sub=cartSub(),fee=type==="delivery"&&sub<300?15:0;s.querySelector("#sum").innerHTML=`<div class="tot"><span>المجموع</span><b>${fmt(sub)}</b></div><div class="tot"><span>التوصيل</span><b>${fee?fmt(fee):"مجاني"}</b></div><div class="tot big"><span>الإجمالي</span><span>${fmt(sub+fee)}</span></div>`;s.querySelector("#ad").style.display=type==="delivery"?"":"none"};
+  const upd=()=>{s.querySelector("#sum").innerHTML=totalsHTML(cartTotals(type==="delivery"));s.querySelector("#ad").style.display=type==="delivery"?"":"none"};
   s.querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>{type=b.dataset.t;s.querySelectorAll("[data-t]").forEach(x=>x.classList.toggle("on",x===b));upd()});
   s.querySelectorAll("[data-p]").forEach(b=>b.onclick=()=>{pay=b.dataset.p;s.querySelectorAll("[data-p]").forEach(x=>x.classList.toggle("on",x===b))});
   s.querySelectorAll("[data-ad]").forEach(b=>b.onclick=()=>{addr=+b.dataset.ad;s.querySelectorAll("[data-ad]").forEach(x=>x.classList.toggle("on",x===b))});
@@ -525,10 +583,10 @@ function checkoutSheet(){
   s.querySelector("#place").onclick=()=>{
     const short=S.cart.find(l=>l.q>prod(l.id).st);if(short){const p=prod(short.id);return toast(`⚠️ المتاح من ${p.n}: ${qty(p,p.st)} بس – عدّل السلة`)}
     const items=S.cart.map(l=>{const p=prod(l.id);return{id:p.id,n:p.n,e:p.e,q:l.q,p:price(p)}});
-    const sub=cartSub(),fee=type==="delivery"&&sub<300?15:0;
-    const o={id:"BM-"+(++S.ordNo),t:Date.now(),phone:c.phone,name:c.name,addr:type==="delivery"?c.addr[addr]:"استلام من الفرع",type,pay,items,sub,fee,total:r2(sub+fee),st:0,note:s.querySelector("#note").value};
-    S.orders.push(o);S.cart=[];c.pts+=Math.floor(o.total/10);markDirty(c);closeAll();hist.length=0;R={tab:"orders"};render();
-    const d=sheet(`<div class="empty" style="padding:20px 0"><div>🎉</div><h2>تم استلام طلبك!</h2><p class="muted">رقم الطلب <b class="ltr">${o.id}</b><br>هنكلمك قريب لتأكيد الطلب.<br>كسبت <b>${Math.floor(o.total/10)}</b> نقطة 🎁</p><button class="btn pri blk" data-a="vieworder" data-v="${o.id}">تابع الطلب</button></div>`);
+    const T=cartTotals(type==="delivery"),sub=T.sub,fee=T.fee;
+    const o={id:"BM-"+(++S.ordNo),t:Date.now(),phone:c.phone,name:c.name,addr:type==="delivery"?c.addr[addr]:"استلام من الفرع",type,pay,items,sub,fee,disc:T.disc,coupon:S.coupon?S.coupon.l:null,total:T.total,st:0,note:s.querySelector("#note").value};
+    S.orders.push(o);S.cart=[];S.coupon=null;c.pts+=Math.floor(o.total/10);markDirty(c);closeAll();hist.length=0;R={tab:"orders"};render();
+    confetti();const d=sheet(`<div class="empty" style="padding:20px 0"><div style="animation:pop .6s cubic-bezier(.2,.8,.3,1.5)">🎉</div><h2>تم استلام طلبك!</h2><p class="muted">رقم الطلب <b class="ltr">${o.id}</b><br>هنكلمك قريب لتأكيد الطلب.<br>كسبت <b>${Math.floor(o.total/10)}</b> نقطة 🎁</p><button class="btn pri blk" data-a="vieworder" data-v="${o.id}">تابع الطلب</button></div>`);
   };
 }
 function custOrders(){
@@ -544,7 +602,7 @@ function custOrder(){
    ${o.st===2&&o.type==="delivery"?`<div class="card row" style="background:var(--info-soft);border-color:transparent"><span style="font-size:26px">🛵</span><div class="sp sm"><b>المندوب: إسلام محمود</b><div class="ltr" style="text-align:right">0101 234 5678</div></div><a class="btn sm pri" href="tel:01012345678">اتصال</a></div>`:""}</div>
    <div class="card" style="margin-top:10px"><div class="sm muted b">${o.type==="delivery"?"📍 "+esc(o.addr):"🏪 استلام من فرع B&M"}</div><div class="sm muted">${o.pay==="cash"?"💵 كاش عند الاستلام":"💳 فيزا عند الاستلام"} • ${dt(o.t)} ${tm(o.t)}</div></div>
    <div class="card list" style="margin-top:10px">${o.items.map(i=>`<div class="li"><span class="ico">${i.e}</span><div class="sp sm"><b>${esc(i.n)}</b><div class="muted xs">${qty(prod(i.id),i.q)} × ${fmt(i.p)}</div></div><b class="sm">${fmt(i.p*i.q)}</b></div>`).join("")}
-   <div style="padding-top:8px"><div class="tot sm"><span>المجموع</span><b>${fmt(o.sub)}</b></div><div class="tot sm"><span>التوصيل</span><b>${o.fee?fmt(o.fee):"مجاني"}</b></div><div class="tot big"><span>الإجمالي</span><span>${fmt(o.total)}</span></div></div></div>
+   <div style="padding-top:8px"><div class="tot sm"><span>المجموع</span><b>${fmt(o.sub)}</b></div><div class="tot sm"><span>التوصيل</span><b>${o.fee?fmt(o.fee):"مجاني"}</b></div>${o.disc?`<div class="tot sm" style="color:var(--sale)"><span>🎡 خصم العجلة</span><b>- ${fmt(o.disc)}</b></div>`:""}<div class="tot big"><span>الإجمالي</span><span>${fmt(o.total)}</span></div></div></div>
    ${o.st===0?`<button class="btn red blk" style="margin-top:12px" data-a="custcancel" data-v="${o.id}">إلغاء الطلب</button>`:""}
    <button class="btn blk" style="margin-top:10px" data-a="reorder" data-v="${o.id}">🔁 اطلب نفس الطلب تاني</button></main>`;
 }
@@ -591,7 +649,7 @@ function aDash(){
   const profit=t.reduce((a,s)=>a+s.items.reduce((b,i)=>b+(i.p-(i.cost||i.p*.85))*i.q,0)-(s.disc||0),0);
   return aTop("لوحة التحكم")+`<main class="main">
    <div class="row" style="margin-bottom:12px"><div><div class="sm muted">${new Date().toLocaleDateString("ar-EG",{weekday:"long",day:"numeric",month:"long"})}</div><h2 style="font-size:20px;font-weight:900">صباح الخير، ${esc(S.session.name)} ☀️</h2></div></div>
-   <div class="grid2 k4">
+   <div class="grid2 k4 anim">
     <div class="kpi"><div class="l">مبيعات النهارده</div><div class="v num">${fmt0(ts)}<small class="sm"> ج.م</small></div><div class="d ${pct>=0?"up":"dn"}">${pct>=0?"▲":"▼"} ${Math.abs(pct)}% عن امبارح</div></div>
     <div class="kpi"><div class="l">عدد الفواتير</div><div class="v num">${t.length}</div><div class="d muted">متوسط ${fmt0(t.length?ts/t.length:0)} ج.م</div></div>
     <div class="kpi"><div class="l">طلبات أونلاين</div><div class="v num">${onl.length}</div><div class="d" style="color:var(--warn)">${S.orders.filter(o=>o.st===0).length} جديد مستني</div></div>
@@ -622,7 +680,7 @@ function aPos(){
    <div class="pos-scan"><input id="scan" placeholder="📷 امسح الباركود أو اكتب اسم الصنف" autocomplete="off" value="${esc(posQ)}"><button class="btn pri" data-a="scango">إضافة</button></div>
    <div class="row xs muted" style="margin:6px 0 8px;flex-wrap:wrap;gap:6px">جرّب: ${["6224008156330","5449000131805","PLU-101","6223000851207"].map(c=>`<button class="tag t-gray ltr" data-a="scancode" data-v="${c}">${c}</button>`).join("")}</div>
    <div class="chips" style="margin-bottom:10px"><button class="chip ${posCat==="all"?"on":""}" data-a="pcat" data-v="all">الكل</button>${CATS.map(([k,nm])=>`<button class="chip ${posCat===k?"on":""}" data-a="pcat" data-v="${k}">${nm}</button>`).join("")}</div>
-   <div class="tiles" id="tiles">${posTiles()}</div>
+   <div class="tiles anim" id="tiles">${posTiles()}</div>
   </main>
   <div class="posbar"><div class="sp"><div class="xs" style="opacity:.8">فاتورة #${S.invNo+1} • ${n} صنف</div><b style="font-size:20px" class="num">${fmt(posTot())}</b></div><button class="btn" style="background:rgba(255,255,255,.14);color:#fff" data-a="invsheet">الفاتورة</button><button class="btn gold" data-a="pay" ${n?"":"disabled"}>دفع</button></div>`;
 }
@@ -731,7 +789,7 @@ function aOrders(){
    <div class="xs muted">${o.type==="delivery"?"🛵 "+esc(o.addr):"🏪 استلام من الفرع"} • ${o.pay==="cash"?"💵 كاش":"💳 فيزا"}</div>
    <div class="sm" style="margin:6px 0">${o.items.map(i=>`${i.e} ${esc(i.n)} ×${qty(prod(i.id),i.q)}`).join("، ")}</div>
    ${o.note?`<div class="xs" style="color:var(--warn)">📝 ${esc(o.note)}</div>`:""}
-   <div class="row" style="margin-top:8px"><b style="font-size:17px">${fmt(o.total)}</b><span class="sp"></span>${o.st===0?`<button class="btn sm red" data-a="ocancel" data-v="${o.id}">رفض</button>`:""}${o.st>=0&&o.st<3?`<button class="btn sm pri" data-a="onext" data-v="${o.id}">${["✓ قبول وتجهيز",o.type==="delivery"?"🛵 خرج للتوصيل":"✓ جاهز للاستلام","✅ تم التسليم"][o.st]}</button>`:""}</div></div>`).join("")||`<div class="empty"><div>🛵</div>مفيش طلبات هنا</div>`}</div></main>`;
+   <div class="row" style="margin-top:8px"><b style="font-size:17px">${fmt(o.total)}</b>${o.coupon?`<span class="tag t-gold">🎡 ${esc(o.coupon)}</span>`:""}<span class="sp"></span>${o.st===0?`<button class="btn sm red" data-a="ocancel" data-v="${o.id}">رفض</button>`:""}${o.st>=0&&o.st<3?`<button class="btn sm pri" data-a="onext" data-v="${o.id}">${["✓ قبول وتجهيز",o.type==="delivery"?"🛵 خرج للتوصيل":"✓ جاهز للاستلام","✅ تم التسليم"][o.st]}</button>`:""}</div></div>`).join("")||`<div class="empty"><div>🛵</div>مفيش طلبات هنا</div>`}</div></main>`;
 }
 function orderNext(id){
   const o=S.orders.find(x=>x.id===id);if(o.st<0||o.st>=3)return;
@@ -861,6 +919,83 @@ function aSettings(){
   <div class="card col" style="margin-top:12px"><b>بيانات العرض</b><p class="sm muted" style="margin:0">رجّع كل البيانات التجريبية زي ما كانت أول مرة.</p><button class="btn red" data-a="reset">إعادة ضبط بيانات العرض</button></div></main>`;
 }
 
+/* ================= EFFECTS ================= */
+const RM=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches;
+function flyToCart(emoji,from){
+  const tgt=document.querySelector('.bnav [data-v=cart]')||document.querySelector('.top [data-v=cart]');
+  const bump=()=>{const d=document.querySelector('.bnav [data-v=cart] .dot');if(d){d.classList.remove("bump");void d.offsetWidth;d.classList.add("bump")}};
+  if(RM||!tgt||!from||!document.body.animate)return bump();
+  const t=tgt.getBoundingClientRect();const el=document.createElement("div");el.className="flyer";el.textContent=emoji;document.body.appendChild(el);
+  const x0=from.left+from.width/2-17,y0=from.top+from.height/2-20,x1=t.left+t.width/2-17,y1=t.top+t.height/2-20;
+  el.animate([{transform:`translate(${x0}px,${y0}px) scale(1)`,opacity:1},{transform:`translate(${(x0+x1)/2}px,${Math.min(y0,y1)-120}px) scale(1.4)`,opacity:1,offset:.45},{transform:`translate(${x1}px,${y1}px) scale(.3)`,opacity:.6}],{duration:750,easing:"cubic-bezier(.45,0,.3,1)"}).onfinish=()=>{el.remove();bump()};
+}
+function confetti(n){
+  if(RM||!document.body.animate)return;
+  const cols=["#f4b400","#147a3e","#d1352b","#2563eb","#2fb565","#ff8a00"];
+  for(let i=0;i<(n||90);i++){const c=document.createElement("i");c.className="conf";c.style.left=Math.random()*100+"vw";c.style.background=cols[i%cols.length];document.body.appendChild(c);
+    const dx=(Math.random()-.5)*160,rot=Math.random()*720;
+    c.animate([{transform:"translate(0,0) rotate(0)",opacity:1},{transform:`translate(${dx}px,${innerHeight+40}px) rotate(${rot}deg)`,opacity:.9}],{duration:1800+Math.random()*1600,delay:Math.random()*400,easing:"cubic-bezier(.2,.6,.4,1)"}).onfinish=()=>c.remove()}
+}
+let carT=null;
+function startCarousel(){
+  clearInterval(carT);const car=$("#car");if(!car)return;let i=0;const sl=car.querySelector(".slides"),ds=car.querySelectorAll(".dots i");
+  const show=k=>{i=(k+3)%3;sl.style.transform=`translateX(${i*100}%)`;ds.forEach((d,j)=>d.classList.toggle("on",j===i))};
+  carT=setInterval(()=>{if(!document.body.contains(car))return clearInterval(carT);show(i+1)},3800);
+  let sx=null;car.addEventListener("touchstart",e=>{sx=e.touches[0].clientX},{passive:true});
+  car.addEventListener("touchend",e=>{if(sx==null)return;const dx=e.changedTouches[0].clientX-sx;if(Math.abs(dx)>40){show(i+(dx>0?1:-1));clearInterval(carT)}sx=null});
+}
+/* ---- spin wheel ---- */
+const PRIZES=[
+  {l:"خصم 10%",t:"pct",v:10,c:"#147a3e",w:18},
+  {l:"توصيل مجاني",t:"ship",c:"#f4b400",w:18},
+  {l:"خصم 25 ج.م",t:"amt",v:25,min:150,c:"#d1352b",w:14},
+  {l:"حظ أوفر",t:"none",c:"#5d6e62",w:12},
+  {l:"خصم 5%",t:"pct",v:5,c:"#2563eb",w:20},
+  {l:"100 نقطة",t:"pts",v:100,c:"#0c4a26",w:10},
+  {l:"خصم 15%",t:"pct",v:15,c:"#e0701b",w:6},
+  {l:"خصم 50 ج.م",t:"amt",v:50,min:400,c:"#8e24aa",w:2}
+];
+const dayKey=()=>new Date().toDateString();
+const spunToday=()=>S.lastSpin===dayKey();
+function wheelSVG(){
+  const n=PRIZES.length,R=150,a=360/n;let g="";
+  PRIZES.forEach((p,i)=>{const s0=(i*a-90-a/2)*Math.PI/180,s1=((i+1)*a-90-a/2)*Math.PI/180;
+    const x0=R+R*Math.cos(s0),y0=R+R*Math.sin(s0),x1=R+R*Math.cos(s1),y1=R+R*Math.sin(s1);
+    g+=`<path d="M${R},${R} L${x0},${y0} A${R},${R} 0 0,1 ${x1},${y1} Z" fill="${p.c}" stroke="#fff" stroke-width="3"/>`;
+    g+=`<g transform="rotate(${i*a} ${R} ${R})"><text x="${R}" y="48" text-anchor="middle" fill="#fff" font-size="15" font-weight="900" font-family="Cairo,Tahoma,sans-serif">${p.l.split(" ")[0]}</text><text x="${R}" y="68" text-anchor="middle" fill="#fff" font-size="13" font-weight="700" font-family="Cairo,Tahoma,sans-serif">${p.l.split(" ").slice(1).join(" ")}</text></g>`});
+  let dots="";for(let i=0;i<24;i++){const t=i*15*Math.PI/180;dots+=`<circle cx="${R+141*Math.cos(t)}" cy="${R+141*Math.sin(t)}" r="3.5" fill="#fff" opacity=".9"/>`}
+  return `<svg viewBox="-6 -6 312 312"><circle cx="150" cy="150" r="156" fill="#0c4a26"/><g class="wheel-rot" id="wrot">${g}</g>${dots}</svg>`;
+}
+let wheelDeg=0;
+function wheelSheet(){
+  const done=spunToday();
+  const s=sheet(`<h2 style="text-align:center">🎡 عجلة الحظ B&amp;M</h2><p class="sm muted" style="text-align:center;margin:-6px 0 4px">لفّة واحدة كل يوم – الجايزة بتتطبق على طلبك أوتوماتيك</p>
+   <div class="wheel-wrap"><div class="pointer" id="ptr"></div>${wheelSVG()}<div class="hub">B&amp;M</div></div>
+   <div id="wres" style="text-align:center;min-height:40px">${done?`<div class="sm muted">لفّيت النهارده خلاص${S.coupon?` – جايزتك: <b>${esc(S.coupon.l)}</b>`:""}. استنى بكرة 😉</div>`:""}</div>
+   <button class="btn gold blk" id="spin" ${done?"disabled":""} style="font-size:18px">${done?"اتلفّت النهارده ✓":"لف العجلة 🎡"}</button>
+   <button class="link xs" id="wreset" style="display:block;margin:10px auto 0;opacity:.6">إعادة المحاولة (وضع العرض)</button>`);
+  const rot=s.querySelector("#wrot");rot.style.transform=`rotate(${wheelDeg}deg)`;
+  s.querySelector("#wreset").onclick=()=>{S.lastSpin=null;S.coupon=null;save();closeSheet();render();wheelSheet()};
+  s.querySelector("#spin").onclick=()=>{
+    if(spunToday())return;const b=s.querySelector("#spin");b.disabled=true;b.textContent="بتلف… 🤞";
+    const tot=PRIZES.reduce((a,p)=>a+p.w,0);let r=Math.random()*tot,k=0;for(;k<PRIZES.length;k++){r-=PRIZES[k].w;if(r<=0)break}k=Math.min(k,PRIZES.length-1);
+    const a=360/PRIZES.length,jitter=(Math.random()-.5)*a*.6;
+    const target=360-(k*a)+jitter;const base=wheelDeg-(wheelDeg%360);wheelDeg=base+360*6+target;
+    rot.style.transform=`rotate(${wheelDeg}deg)`;
+    let last=0;const t0=Date.now();const ptr=s.querySelector("#ptr");
+    const tick=()=>{const el=Date.now()-t0;if(el>5200)return;const m=getComputedStyle(rot).transform;if(m&&m!=="none"){const v=m.split("(")[1].split(",");const ang=Math.atan2(+v[1],+v[0])*180/Math.PI;const seg=Math.floor((ang+360)/a);if(seg!==last){last=seg;beep();ptr.classList.remove("tick");void ptr.offsetWidth;ptr.classList.add("tick")}}requestAnimationFrame(tick)};
+    if(!RM)requestAnimationFrame(tick);
+    setTimeout(()=>{
+      const p=PRIZES[k];S.lastSpin=dayKey();
+      let msg="";
+      if(p.t==="none"){msg=`<div class="prize" style="color:var(--muted)">حظ أوفر المرة الجاية 🙏</div><div class="sm muted">ارجع بكرة ولف تاني!</div>`}
+      else if(p.t==="pts"){const c=me();if(c){c.pts+=p.v;markDirty(c)}else S.pendingPts=(S.pendingPts||0)+p.v;msg=`<div class="prize">🎁 +${p.v} نقطة!</div><div class="sm muted">${c?"اتضافت لحسابك":"هتتضاف لحسابك أول ما تسجّل دخول"}</div>`;confetti()}
+      else{S.coupon={l:p.l,t:p.t,v:p.v,min:p.min};msg=`<div class="prize">🎉 ${p.l}!</div><div class="sm muted">${p.t==="amt"?`على الطلبات فوق ${p.min} ج.م • `:""}هيتطبق أوتوماتيك في السلة</div>`;confetti()}
+      vib();save();s.querySelector("#wres").innerHTML=msg;b.disabled=false;b.className="btn pri blk";b.textContent=p.t==="none"?"تمام":"تسوّق دلوقتي 🛒";b.onclick=()=>{closeSheet();render()};
+    },RM?50:5400);
+  };
+}
+
 /* ================= EVENTS ================= */
 const A={
   back:()=>back(),
@@ -877,7 +1012,7 @@ const A={
   logout:()=>{guest=false;S.session=null;R={tab:"login"};hist.length=0;closeAll();render()},
   theme:v=>{S.theme=v;render()},
   prod:v=>prodSheet(+v),
-  addcart:v=>{const p=prod(+v);if(p.kg)return prodSheet(p.id);addCart(p.id,1)},
+  addcart:(v,b)=>{const p=prod(+v);if(p.kg)return prodSheet(p.id);const r=b.getBoundingClientRect();if(addCart(p.id,1)!==false)flyToCart(p.e,r)},
   cq:(v,b)=>{const l=S.cart[+v],p=prod(l.id),st=p.kg?.25:1;const nq=r2(l.q+st*+b.dataset.x);if(nq>p.st)return toast(`⚠️ المتاح من ${p.n}: ${qty(p,p.st)} بس`);l.q=nq;if(l.q<=0)S.cart.splice(+v,1);render()},
   clearcart:()=>{S.cart=[];render()},
   checkout:()=>checkoutSheet(),
@@ -914,6 +1049,7 @@ const A={
   export:()=>toast("⬇️ التقرير اتصدّر Excel – وضع العرض"),
   viewinv:v=>invDetail(v),
   newstaff:()=>newStaff(),
+  wheel:()=>wheelSheet(),
   dbsync:()=>syncAccounts(true),
   cashio:v=>{const s=sheet(`<h2>${v==="in"?"إيداع نقدية":"سحب / مصروف"}</h2><label class="lbl">المبلغ</label><input id="cv" type="number" inputmode="decimal"><label class="lbl" style="margin-top:8px">السبب</label><input placeholder="${v==="in"?"فكة":"مصاريف نظافة"}"><button class="btn pri blk" style="margin-top:12px" id="cok">حفظ</button>`);s.querySelector("#cok").onclick=()=>{const a=+s.querySelector("#cv").value;if(!a)return;S.shift[v==="in"?"cashIn":"cashOut"]+=a;closeSheet();render();toast("✓ اتسجل")}},
   closeshift:v=>{const c=+$("#counted").value;if(!$("#counted").value)return toast("اكتب النقدية الفعلية");const d=r2(c-+v);S.shift.open=false;render();sheet(`<div class="empty" style="padding:10px 0"><div>📋</div><h2>تقرير قفل الوردية</h2></div><div class="card"><div class="tot"><span>المتوقع</span><b>${fmt(+v)}</b></div><div class="tot"><span>الفعلي</span><b>${fmt(c)}</b></div><div class="tot big"><span>${d===0?"مظبوط ✓":d>0?"زيادة":"عجز"}</span><span style="color:${d<0?"var(--sale)":"var(--accent)"}">${fmt(Math.abs(d))}</span></div></div><button class="btn pri blk" style="margin-top:12px" data-a="print">🖨️ طباعة التقرير</button>`)},
@@ -938,11 +1074,11 @@ document.addEventListener("keydown",e=>{
 /* inner click on product card's add button must not open sheet */
 document.addEventListener("click",e=>{},true);
 const _render=render;
-render=function(){_render();if(R.tab==="search")setTimeout(()=>{const q=$("#q");if(q){searchResults(q.value);q.focus()}},0)};
+render=function(){_render();startCarousel();if(R.tab==="search")setTimeout(()=>{const q=$("#q");if(q){searchResults(q.value);q.focus()}},0)};
 render();
 syncAccounts();
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)syncAccounts()});
-setTimeout(()=>{const s=$("#splash");s.style.opacity=0;setTimeout(()=>s.remove(),400)},900);
+setTimeout(()=>{const s=$("#splash");s.style.opacity=0;s.style.transform="scale(1.08)";s.style.transition="opacity .45s,transform .45s";setTimeout(()=>s.remove(),450)},1500);
 </script>
 </body>
 </html>
