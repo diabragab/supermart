@@ -475,12 +475,12 @@ function seed(){
   const sales=[];let no=10300;
   for(let d=13;d>=0;d--){
     const base=new Date(now-d*day);base.setHours(9,0,0,0);
-    const n=d===0?Math.min(22,Math.floor((new Date().getHours()-8)*2.2)+4):18+Math.floor(r()*14);
+    const n=d===0?16+Math.floor(r()*6):18+Math.floor(r()*14);
     for(let i=0;i<n;i++){
       const items=[];const k=1+Math.floor(r()*5);
       for(let j=0;j<k;j++){const p=products[Math.floor(r()*products.length)];const q=p.kg?Math.round((.5+r()*1.5)*4)/4:1+Math.floor(r()*3);items.push({id:p.id,n:p.n,e:p.e,q,p:p.offer||p.p,cost:p.cost})}
       const total=r2(items.reduce((a,x)=>a+x.p*x.q,0));
-      const t=base.getTime()+Math.floor(r()*13*36e5);
+      const t=d===0?now-6e4-Math.floor(r()*Math.min(10,Math.max(3,new Date().getHours()))*36e5):base.getTime()+Math.floor(r()*13*36e5);
       if(t>now)continue;
       sales.push({id:++no,t,items,sub:total,disc:0,total,pay:r()<.68?"cash":"visa",cashier:r()<.6?"أحمد سمير":"منى خالد",synced:true,ret:false});
     }
