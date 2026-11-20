@@ -20,11 +20,14 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Window w = getWindow();
-        w.setStatusBarColor(Color.parseColor("#0C4A26"));
-        w.setNavigationBarColor(Color.parseColor("#0C4A26"));
+        w.setStatusBarColor(Color.parseColor("#089468"));
+        w.setNavigationBarColor(Color.parseColor("#F4F6F5"));
+        if (android.os.Build.VERSION.SDK_INT >= 26) {
+            w.getDecorView().setSystemUiVisibility(android.view.View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR);
+        }
 
         web = new WebView(this);
-        web.setBackgroundColor(Color.parseColor("#0C4A26"));
+        web.setBackgroundColor(Color.parseColor("#0AA06E"));
         WebSettings s = web.getSettings();
         s.setJavaScriptEnabled(true);
         s.setDomStorageEnabled(true);

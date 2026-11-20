@@ -3,23 +3,31 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
-<meta name="theme-color" content="#0c4a26">
+<meta name="theme-color" content="#f4f6f5">
 <title>B&amp;M سوبر ماركت</title>
 <style>
 :root{
-  --bg:#eef1ec;--surface:#fff;--sunk:#f3f5f1;--fg:#13241a;--muted:#5d6e62;--line:#dde3d8;
-  --accent:#147a3e;--accent-ink:#fff;--deep:#0c4a26;--soft:#dcf2e2;
-  --gold:#f4b400;--gold-ink:#3a2a00;--gold-soft:#fff4d1;
-  --sale:#d1352b;--sale-soft:#fde4e1;--warn:#b86e00;--warn-soft:#fff0d6;--info:#2563eb;--info-soft:#dbe7fd;
-  --shadow:0 10px 30px rgba(19,36,26,.16);
-  --f:'Cairo','Noto Sans Arabic','Segoe UI',Tahoma,system-ui,sans-serif;
+  --bg:#f4f6f5;--surface:#fff;--sunk:#eef2f0;--fg:#0f1f18;--muted:#6b7a72;--line:#e6ebe8;
+  --accent:#0aa06e;--accent2:#12b886;--accent-ink:#fff;--deep:#063d2b;--soft:#e2f6ee;
+  --grad:linear-gradient(135deg,#14c48c 0%,#0aa06e 45%,#067a57 100%);
+  --gold:#ffb020;--gold-ink:#3a2500;--gold-soft:#fff3dc;
+  --hot:#ff6a3d;--hot2:#ff9a3d;
+  --sale:#f0443a;--sale-soft:#feeae8;--warn:#c27400;--warn-soft:#fff2dc;--info:#3b6cf6;--info-soft:#e4ecff;
+  --shadow:0 18px 40px -12px rgba(8,40,28,.22);--sh1:0 1px 2px rgba(8,40,28,.05),0 6px 18px -6px rgba(8,40,28,.10);
+  --r:20px;
+  --f:'Readex','Cairo','Noto Sans Arabic','Segoe UI',Tahoma,system-ui,sans-serif;
+  --c-veg:#e7f7e9;--c-dairy:#fff6dc;--c-bakery:#fdeedd;--c-meat:#fde7e4;--c-grocery:#eef1ff;--c-drinks:#e3f4fb;--c-snacks:#f6e9fb;--c-clean:#e6f7f5;
 }
 :root[data-theme="dark"]{
-  --bg:#0d140f;--surface:#16211a;--sunk:#1c2921;--fg:#e6efe8;--muted:#9aaba0;--line:#29392f;
-  --accent:#2fb565;--accent-ink:#06210f;--deep:#0b2616;--soft:#183a26;
-  --gold:#f4b400;--gold-ink:#2a1e00;--gold-soft:#3a2f10;
-  --sale:#ff6b5e;--sale-soft:#3a1d1a;--warn:#f2a93b;--warn-soft:#3a2c12;--info:#7aa7ff;--info-soft:#1b2a45;
-  --shadow:0 10px 30px rgba(0,0,0,.55);color-scheme:dark}
+  --bg:#0b1210;--surface:#141d19;--sunk:#1b2621;--fg:#e8f1ec;--muted:#93a69c;--line:#24322b;
+  --accent:#22c98a;--accent2:#3ddc9f;--accent-ink:#04170f;--deep:#06231a;--soft:#143326;
+  --gold:#ffb020;--gold-ink:#2a1a00;--gold-soft:#3a2c10;
+  --sale:#ff6b5e;--sale-soft:#3a1d1a;--warn:#f2a93b;--warn-soft:#3a2c12;--info:#7aa2ff;--info-soft:#1b2745;
+  --shadow:0 18px 40px -12px rgba(0,0,0,.7);--sh1:0 1px 2px rgba(0,0,0,.3),0 6px 18px -6px rgba(0,0,0,.5);
+  --c-veg:#17291c;--c-dairy:#2b2614;--c-bakery:#2d2116;--c-meat:#2e1a18;--c-grocery:#1b1f33;--c-drinks:#14262e;--c-snacks:#271a2e;--c-clean:#132a27;
+  color-scheme:dark}
+@font-face{font-family:'Readex';font-style:normal;font-display:swap;font-weight:160 700;src:url(fonts/readex-ar.woff2) format('woff2');unicode-range:U+0600-06FF,U+0750-077F,U+08A0-08FF,U+200C-200E,U+2010-2011,U+FB50-FDFF,U+FE70-FEFC}
+@font-face{font-family:'Readex';font-style:normal;font-display:swap;font-weight:160 700;src:url(fonts/readex-lat.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2212}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;height:100%}
 body{background:var(--bg);color:var(--fg);font-family:var(--f);font-size:15px;line-height:1.55;overscroll-behavior:none}
@@ -238,10 +246,180 @@ h1,h2,h3{margin:0}
   .cats{grid-template-columns:repeat(8,1fr)}
   .grid2.k4{grid-template-columns:repeat(4,1fr)}
 }
+/* ===================== B&M v2 – modern theme ===================== */
+body{font-size:14.5px;letter-spacing:-.1px;-webkit-font-smoothing:antialiased}
+b,strong,.b{font-weight:600}
+h1,h2,h3{font-weight:700!important;letter-spacing:-.2px}
+.svg{width:22px;height:22px;display:block}
+input,select,textarea{border:1.5px solid transparent;background:var(--sunk);border-radius:14px;padding:13px 15px;transition:border-color .2s,background .2s,box-shadow .2s}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);background:var(--surface);box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 16%,transparent)}
+/* top bar – light, glassy */
+.top{background:color-mix(in srgb,var(--bg) 82%,transparent);-webkit-backdrop-filter:saturate(1.6) blur(14px);backdrop-filter:saturate(1.6) blur(14px);color:var(--fg);padding:12px 16px;min-height:62px}
+.top h1{font-size:19px;font-weight:700}
+.top .ib{width:42px;height:42px;border-radius:14px;background:var(--surface);color:var(--fg);box-shadow:var(--sh1);font-size:17px}
+.top .ib .svg{width:21px;height:21px}
+.top .ib .dot{top:-5px;left:-5px;background:var(--hot);color:#fff;border:2px solid var(--bg);line-height:16px;font-weight:700}
+.logo{background:var(--grad);color:#fff;font-weight:700;border-radius:12px;padding:3px 10px;font-size:16px;letter-spacing:0;box-shadow:0 6px 14px -6px rgba(10,160,110,.7)}
+.logo i{color:#ffd166}
+.top .offline-pill{background:var(--soft)!important;color:var(--accent)!important}
+.main{padding:8px 16px 118px}
+/* floating bottom nav */
+.bnav{left:12px;right:12px;bottom:calc(10px + env(safe-area-inset-bottom));border:0;border-radius:24px;padding:7px 6px;background:color-mix(in srgb,var(--surface) 88%,transparent);-webkit-backdrop-filter:saturate(1.8) blur(18px);backdrop-filter:saturate(1.8) blur(18px);box-shadow:0 14px 34px -10px rgba(8,40,28,.30),0 0 0 1px color-mix(in srgb,var(--line) 70%,transparent)}
+.bnav button{font-size:11px;font-weight:500;gap:3px;padding:3px 0;transition:color .2s}
+.bnav button span{width:46px;height:32px;display:grid;place-items:center;border-radius:12px;transition:all .25s cubic-bezier(.3,.7,.3,1.3)}
+.bnav button.on{color:var(--accent);font-weight:700}
+.bnav button.on span{background:var(--grad);color:#fff;padding:0;border-radius:12px;box-shadow:0 8px 16px -6px rgba(10,160,110,.8);transform:translateY(-2px)}
+.bnav .dot{top:-2px;left:calc(50% - 26px);background:var(--hot);border:2px solid var(--surface);line-height:15px;font-weight:700;z-index:1}
+/* cards */
+.card,.kpi{border:0;border-radius:var(--r);box-shadow:var(--sh1)}
+.card{padding:16px}
+.sec{margin:24px 0 12px}
+.sec h2{font-size:17px;font-weight:700}
+.sec a,.link{font-weight:600;font-size:13px;color:var(--accent);background:var(--soft);padding:4px 12px;border-radius:99px}
+.btn{border:0;border-radius:14px;padding:12px 18px;font-weight:600;background:var(--surface);box-shadow:var(--sh1);transition:transform .15s}
+.btn.pri{background:var(--grad);box-shadow:0 10px 22px -10px rgba(10,160,110,.9)}
+.btn.gold{background:linear-gradient(135deg,#ffc43d,#ff9f1a);color:#3a2300;box-shadow:0 10px 22px -10px rgba(255,150,20,.9)}
+.btn.red{box-shadow:none}
+.btn.blk{padding:15px;border-radius:16px;font-size:15.5px}
+.btn.sm{padding:7px 13px;border-radius:11px;font-size:12.5px;box-shadow:none}
+.chip{border:0;background:var(--surface);box-shadow:var(--sh1);padding:8px 16px;font-weight:500;font-size:13px}
+.chip.on{background:var(--fg);color:var(--bg);box-shadow:0 8px 16px -8px rgba(0,0,0,.5)}
+.chips{padding:2px 2px 6px}
+.tag{font-weight:600;padding:2px 10px;font-size:11.5px}
+.search input{padding-right:46px;border-radius:16px;background:var(--surface);box-shadow:var(--sh1);height:50px}
+.search span{right:15px;color:var(--muted)}
+.search span .svg{width:20px;height:20px}
+.ico{border-radius:14px;background:var(--sunk)}
+.list>*+*{border-top:1px solid var(--line)}
+.li{padding:13px 2px}
+.empty div{font-size:64px;filter:drop-shadow(0 10px 14px rgba(0,0,0,.12))}
+.empty b{font-size:17px;display:block;margin:6px 0 2px}
+.av{background:linear-gradient(135deg,#ffd166,#ff9f1a);color:#fff;font-weight:700}
+/* customer hero header */
+.hero-top{position:relative;background:var(--grad);color:#fff;padding:16px 16px 26px;border-radius:0 0 30px 30px;overflow:hidden;box-shadow:0 18px 30px -18px rgba(6,90,60,.8)}
+.hero-top::before,.hero-top::after{content:"";position:absolute;border-radius:50%;background:rgba(255,255,255,.10);pointer-events:none}
+.hero-top::before{width:220px;height:220px;top:-120px;left:-60px}
+.hero-top::after{width:140px;height:140px;bottom:-80px;right:30%;background:rgba(255,255,255,.07)}
+.hero-top>*{position:relative;z-index:1}
+.hero-top .logo{background:#fff;color:var(--accent);box-shadow:0 8px 18px -8px rgba(0,0,0,.4);font-size:17px;padding:5px 11px}
+.hero-top .logo i{color:var(--hot)}
+.hero-top .hello{font-size:18px;font-weight:700}
+.hero-top .loc{font-size:12.5px;opacity:.9;display:flex;align-items:center;gap:4px}
+.hero-top .loc .svg{width:14px;height:14px}
+.hero-top .loc b{font-weight:600}
+.hero-top .ib{width:44px;height:44px;border-radius:15px;display:grid;place-items:center;background:rgba(255,255,255,.18);color:#fff;position:relative;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.hero-top .ib .dot{position:absolute;top:-5px;left:-5px;background:var(--hot);color:#fff;font-size:11px;font-weight:700;border-radius:99px;min-width:19px;padding:0 4px;line-height:16px;border:2px solid #0aa06e;font-style:normal}
+.hero-top .search{margin-top:16px}
+.hero-top .search input{box-shadow:0 12px 24px -12px rgba(0,0,0,.45);border:0;color:var(--fg)}
+.main.home{padding-top:4px}
+/* banners */
+.carousel{border-radius:24px;margin-top:16px;box-shadow:0 16px 30px -18px rgba(8,40,28,.6)}
+.banner{border-radius:24px;padding:20px 20px 22px;min-height:150px;background:linear-gradient(120deg,#0f2f24 0%,#0a5c40 55%,#0aa06e 100%)}
+.banner h3{font-size:21px;font-weight:700}
+.banner p{font-size:13.5px;max-width:64%}
+.banner .btn{background:#fff;color:#0f1f18;box-shadow:none;padding:8px 16px;border-radius:12px;font-size:13px}
+.banner .big{font-size:92px;left:6px;bottom:-4px;filter:drop-shadow(0 14px 16px rgba(0,0,0,.35))}
+.banner.b2{background:linear-gradient(120deg,#ff6a3d,#ff9a3d 60%,#ffc23d)}
+.banner.b2 .btn{background:#2a1606;color:#fff}
+.banner.b3{background:linear-gradient(120deg,#2b3dd8,#3b6cf6 55%,#22b3e6)}
+.dots i{height:6px;width:6px}.dots i.on{width:22px}
+/* categories */
+.cats{gap:14px 8px}
+.cat{font-weight:500;font-size:12px;gap:6px}
+.cat span{width:66px;height:66px;border-radius:22px;border:0;background:var(--c,var(--surface));font-size:32px;box-shadow:inset 0 -3px 0 rgba(0,0,0,.04)}
+.cat span{filter:none}
+/* product cards */
+.pgrid{gap:12px}
+.pc{border:0;border-radius:22px;padding:8px 8px 12px;box-shadow:var(--sh1);gap:4px}
+.pc .im{height:112px;border-radius:17px;background:var(--c,var(--sunk));font-size:60px;margin-bottom:4px}
+.pc .im{text-shadow:0 10px 14px rgba(0,0,0,.14)}
+.pc b{font-size:13.5px;font-weight:600;min-height:36px;padding:0 4px}
+.pc .pr{padding:0 4px}
+.pc .pr strong{color:var(--fg);font-size:15.5px;font-weight:700}
+.pc .pr s{font-size:11.5px}
+.pc .xs{padding:0 4px}
+.pc .add{bottom:12px;left:10px;width:36px;height:36px;border-radius:50%;background:var(--grad);font-size:22px;font-weight:500;box-shadow:0 8px 14px -6px rgba(10,160,110,.9)}
+.pc .off{top:14px;right:14px;background:linear-gradient(135deg,var(--hot),var(--hot2));border-radius:99px;padding:1px 8px;font-weight:700;font-size:11px;box-shadow:0 6px 12px -6px rgba(255,90,40,.9)}
+.hscroll{gap:12px;padding:2px 16px 10px}
+.hscroll .pc{width:156px}
+.pimg{height:200px;border-radius:26px;background:var(--c,var(--surface));display:grid;place-items:center;font-size:110px;text-shadow:0 18px 24px rgba(0,0,0,.18)}
+.step{border:0;background:var(--sunk);border-radius:14px}
+.step button{color:var(--accent)}
+.coupon{border-radius:18px;border-color:#ffc23d}
+/* KPIs */
+.kpi{padding:14px 15px;position:relative;overflow:hidden}
+.kpi .l{font-weight:500;font-size:12.5px}
+.kpi .v{font-size:23px;font-weight:700;letter-spacing:-.5px;margin-top:2px}
+.kpi .d{font-weight:500}
+.kpi .ki{display:grid;place-items:center;width:38px;height:38px;border-radius:13px;margin-bottom:10px;background:var(--soft);color:var(--accent);font-style:normal}
+.kpi .ki .svg{width:20px;height:20px}
+.kpi .ki.k-b{background:var(--info-soft);color:var(--info)}
+.kpi .ki.k-o{background:var(--warn-soft);color:var(--hot)}
+.kpi .ki.k-p{background:#f1e8ff;color:#8b5cf6}
+:root[data-theme="dark"] .kpi .ki.k-p{background:#2a2040}
+.kpi.hero{background:var(--grad);color:#fff;box-shadow:0 16px 30px -14px rgba(10,160,110,.85)}
+.kpi.hero .l,.kpi.hero .d{color:rgba(255,255,255,.88)!important}
+.kpi.hero .ki{background:rgba(255,255,255,.2);color:#fff}
+.kpi.hero::after{content:"";position:absolute;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.12);top:-50px;left:-40px}
+/* charts */
+.bars{height:160px;gap:8px}
+.bars .bar{background:linear-gradient(180deg,var(--accent2),var(--accent));border-radius:10px;max-width:30px}
+.bars .bar.hl{background:linear-gradient(180deg,#ffc43d,#ff8a1a)}
+.hbar{background:var(--sunk);height:8px}
+.hbar i{background:var(--grad)}
+/* sheet & overlay */
+.ov{background:rgba(4,16,11,.45);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+.sheet{border-radius:30px 30px 0 0;padding-top:10px}
+.sheet .grab{width:48px;background:color-mix(in srgb,var(--muted) 40%,transparent)}
+.sheet h2{font-size:20px}
+.toast{border-radius:16px;bottom:104px;font-weight:500;background:color-mix(in srgb,var(--fg) 92%,transparent);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.seg{border:0;border-radius:15px;padding:4px}
+.seg button{border-radius:11px;font-weight:600;font-size:13.5px}
+.seg button.on{box-shadow:var(--sh1)}
+.opt{border:1.5px solid transparent;background:var(--surface);border-radius:16px;box-shadow:var(--sh1)}
+.opt.on{border-color:var(--accent);background:var(--soft);box-shadow:none}
+.lbl{font-weight:600;font-size:12.5px}
+/* login */
+.login{position:relative;overflow:hidden;background:var(--bg)}
+.login::before{content:"";position:absolute;inset:0 0 auto 0;height:360px;background:var(--grad);border-radius:0 0 40px 40px}
+.login>*{position:relative;z-index:1}
+.login .blob,.splash .blob{position:absolute;border-radius:50%;z-index:0;pointer-events:none}
+.login .blob.b1{width:260px;height:260px;top:-110px;left:-90px;background:rgba(255,255,255,.12)}
+.login .blob.b2{width:160px;height:160px;top:190px;right:-60px;background:rgba(255,209,102,.25)}
+.login .hero{padding:58px 20px 30px}
+.login .hero .logo{background:#fff;color:var(--accent);font-size:36px;padding:8px 22px;border-radius:22px;box-shadow:0 18px 30px -14px rgba(0,0,0,.45)}
+.login .hero .logo i{color:var(--hot)}
+.login .hero p{font-size:14px;opacity:.92}
+.login .box{border-radius:28px;padding:20px;box-shadow:0 30px 60px -24px rgba(8,40,28,.35)}
+.demo{border:0;background:var(--sunk);border-radius:18px;padding:12px}
+.demo button{border-radius:12px;padding:9px 8px;font-size:13px}
+.demo button:active{background:var(--surface)}
+/* POS */
+.pos-scan input{border:2px solid var(--accent);background:var(--surface);height:50px}
+.tiles{gap:10px}
+.tile{border:0;border-radius:18px;padding:7px 7px 9px;box-shadow:var(--sh1)}
+.tile .e{height:56px;border-radius:13px;background:var(--c,var(--sunk));font-size:32px}
+.tile b{font-weight:600;font-size:12.5px;padding:0 3px}
+.tile .p{color:var(--fg);font-weight:700;padding:0 3px}
+.tile .s{font-weight:500;padding:0 3px}
+.tile .kg{border-radius:99px;padding:0 7px;font-weight:600;top:11px;left:11px}
+.posbar{bottom:calc(84px + env(safe-area-inset-bottom));border-radius:22px;padding:12px 14px;background:linear-gradient(120deg,#0f2f24,#0a5c40);box-shadow:0 20px 36px -14px rgba(6,40,28,.8)}
+.keypad button{border:0;box-shadow:var(--sh1);border-radius:14px}
+.track .done .c{background:var(--grad);border-color:transparent}
+.fab{border-radius:20px;background:var(--grad);bottom:96px}
+.wheel-fab{bottom:100px}
+/* splash */
+.splash{background:var(--grad);overflow:hidden}
+.splash .blob.b1{width:340px;height:340px;top:-120px;left:-120px;background:rgba(255,255,255,.12)}
+.splash .blob.b2{width:240px;height:240px;bottom:-80px;right:-60px;background:rgba(255,209,102,.22)}
+.splash .logo{background:#fff;color:var(--accent);box-shadow:0 24px 40px -16px rgba(0,0,0,.5)}
+.splash .logo i{color:var(--hot)}
+.splash .tag2{color:#eafff5}
+
 </style>
 </head>
 <body>
-<div class="splash" id="splash"><div style="text-align:center;overflow:hidden"><div class="logo">B<i>&amp;</i>M</div><div class="tag2">سوبر ماركت • كل احتياجات بيتك</div><div style="height:56px;margin-top:10px"><span class="cartgo">🛒</span></div></div></div>
+<div class="splash" id="splash"><i class="blob b1"></i><i class="blob b2"></i><div style="text-align:center;overflow:hidden;position:relative"><div class="logo">B<i>&amp;</i>M</div><div class="tag2">سوبر ماركت • كل احتياجات بيتك</div><div style="height:56px;margin-top:10px"><span class="cartgo">🛒</span></div></div></div>
 <div id="app"></div>
 <div id="ovs"></div>
 <div class="toast" id="toast" hidden></div>
@@ -335,6 +513,29 @@ try{S=JSON.parse(localStorage.getItem("bm_app"));if(!S||S.v!==3)S=null}catch(e){
 if(!S)S=seed();
 function save(){try{localStorage.setItem("bm_app",JSON.stringify(S))}catch(e){}}
 
+
+/* ================= ICONS (line, 24px) ================= */
+const ICP={home:'<path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/>',
+grid:'<rect x="3" y="3" width="7.5" height="7.5" rx="2.2"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="2.2"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="2.2"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="2.2"/>',
+cart:'<circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2.5 3.5h2.7l2.4 11a2 2 0 0 0 2 1.6h7.9a2 2 0 0 0 1.9-1.5L21 7.5H6.1"/>',
+box:'<path d="M21 8 12 3 3 8v8l9 5 9-5z"/><path d="m3 8 9 5 9-5M12 13v8"/>',
+user:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+chart:'<path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 6-6"/>',
+receipt:'<path d="M5 3h14v18l-2.5-1.6L14 21l-2-1.6-2 1.6-2.5-1.6L5 21z"/><path d="M9 8h6M9 12h6M9 16h3"/>',
+truck:'<path d="M2 6h12v10H2zM14 9.5h4.2L22 13v3h-8"/><circle cx="6.5" cy="18" r="2"/><circle cx="17.5" cy="18" r="2"/>',
+boxes:'<path d="M4 10h16v11H4zM2 6h20v4H2zM10 14h4"/>',
+menu:'<path d="M4 7h16M4 12h16M4 17h10"/>',
+bell:'<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
+back:'<path d="m9 6 6 6-6 6"/>',
+trash:'<path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 11v5M14 11v5"/>',
+pause:'<rect x="6" y="4.5" width="4" height="15" rx="1.2"/><rect x="14" y="4.5" width="4" height="15" rx="1.2"/>',
+search:'<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
+pin:'<path d="M12 21s-7-6.2-7-12a7 7 0 0 1 14 0c0 5.8-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/>',
+money:'<rect x="2" y="6" width="20" height="12" rx="3"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.01M18 12h.01"/>',
+coins:'<circle cx="9" cy="9" r="6"/><path d="M15.5 9.2A6 6 0 1 1 9.2 15.5"/>',
+bag:'<path d="M5 8h14l-1 12H6z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/>',
+trend:'<path d="m3 17 6-6 4 4 8-8"/><path d="M15 7h6v6"/>'};
+const ic=(n,c)=>`<svg class="svg ${c||""}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICP[n]||""}</svg>`;
 /* ================= HELPERS ================= */
 const $=s=>document.querySelector(s);
 const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
@@ -445,16 +646,16 @@ function render(){
   save();
 }
 function topbar(title,opts={}){
-  const bk=hist.length?`<button class="ib" data-a="back">→</button>`:"";
-  return `<header class="top">${bk}${opts.logo?`<span class="logo">B<i>&amp;</i>M</span>`:""}<h1>${title}</h1>${opts.right||""}</header>`;
+  const bk=hist.length?`<button class="ib" data-a="back">${ic("back")}</button>`:"";
+  return `<header class="top${opts.cls?" "+opts.cls:""}">${bk}${opts.logo?`<span class="logo">B<i>&amp;</i>M</span>`:""}<h1>${title}</h1>${opts.right||""}</header>`;
 }
-function bnav(items){return `<nav class="bnav">${items.map(([k,ic,l,dot])=>`<button class="${R.tab===k||(R.root===k)?"on":""}" data-a="tab" data-v="${k}"><span>${ic}</span>${l}${dot?`<i class="dot">${dot}</i>`:""}</button>`).join("")}</nav>`}
+window.ic=ic;function bnav(items){return `<nav class="bnav">${items.map(([k,ic,l,dot])=>`<button class="${R.tab===k||(R.root===k)?"on":""}" data-a="tab" data-v="${k}"><span>${ICP[ic]?window.ic(ic):ic}</span>${l}${dot?`<i class="dot">${dot}</i>`:""}</button>`).join("")}</nav>`}
 
 /* ---------- LOGIN ---------- */
 let loginMode="login";
 function loginView(){
   const reg=loginMode==="reg";
-  return `<div class="login"><div class="hero"><div class="logo">B<i>&amp;</i>M</div><p>سوبر ماركت – كل احتياجات بيتك لحد باب البيت</p></div>
+  return `<div class="login"><i class="blob b1"></i><i class="blob b2"></i><div class="hero"><div class="logo">B<i>&amp;</i>M</div><p>سوبر ماركت – كل احتياجات بيتك لحد باب البيت</p></div>
   <div class="box">
    <div class="seg" style="margin-bottom:14px"><button class="${!reg?"on":""}" data-a="lmode" data-v="login">تسجيل الدخول</button><button class="${reg?"on":""}" data-a="lmode" data-v="reg">حساب جديد</button></div>
    <form id="lf" class="col" onsubmit="return false">
@@ -492,11 +693,11 @@ function custShell(){
   const map={home:custHome,cats:custCats,cat:custCat,search:custSearch,cart:custCart,orders:custOrders,order:custOrder,profile:custProfile,guest:custHome};
   const v=(map[R.tab]||custHome)();
   const myOrders=me()?S.orders.filter(o=>o.phone===me().phone&&o.st>=0&&o.st<3).length:0;
-  return v+bnav([["home","🏠","الرئيسية"],["cats","🗂️","الأقسام"],["cart","🛒","السلة",cartCount()||""],["orders","📦","طلباتي",myOrders||""],["profile","👤","حسابي"]]);
+  return v+bnav([["home","home","الرئيسية"],["cats","grid","الأقسام"],["cart","cart","السلة",cartCount()||""],["orders","box","طلباتي",myOrders||""],["profile","user","حسابي"]]);
 }
 function pcard(p){
   const off=p.offer?Math.round((1-p.offer/p.p)*100):0;
-  return `<div class="pc" data-a="prod" data-v="${p.id}">${off?`<span class="off">-${off}%</span>`:""}<div class="im">${p.e}</div><b>${esc(p.n)}</b>
+  return `<div class="pc" data-a="prod" data-v="${p.id}" style="--c:var(--c-${p.c})">${off?`<span class="off">-${off}%</span>`:""}<div class="im">${p.e}</div><b>${esc(p.n)}</b>
   <div class="pr"><strong>${fmt(price(p))}</strong>${p.offer?`<s>${fmt0(p.p)}</s>`:""}</div><div class="xs muted">${p.kg?"للكيلو":"للقطعة"}${p.st<=0?' • <span style="color:var(--sale)">نفد</span>':""}</div>
   ${p.st>0?`<button class="add" data-a="addcart" data-v="${p.id}">+</button>`:""}</div>`;
 }
@@ -504,9 +705,10 @@ function custHome(){
   const c=me();
   const offers=S.products.filter(p=>p.offer);
   const best=[12,2,28,18,6,4,13,20].map(prod);
-  return topbar(c?`أهلاً، ${esc(c.name.split(" ")[0])} 👋`:"أهلاً بيك في B&M",{logo:true,right:`<button class="ib" data-a="tab" data-v="cart">🛒${cartCount()?`<i class="dot">${cartCount()}</i>`:""}</button>`})+
-  `<main class="main">
-   <div class="search" data-a="tab" data-v="search"><span>🔍</span><input placeholder="ابحث عن منتج… رز، زيت، لبن" readonly></div>
+  const addr=c&&c.addr&&c.addr[0]?c.addr[0].split("–")[0].trim():"القاهرة";
+  return `<header class="hero-top"><div class="row"><span class="logo">B<i>&amp;</i>M</span><div class="sp"><div class="hello">${c?`أهلاً، ${esc(c.name.split(" ")[0])} 👋`:"أهلاً بيك في B&amp;M 👋"}</div><div class="loc">${ic("pin")} التوصيل إلى <b>${esc(addr)}</b></div></div><button class="ib" data-a="tab" data-v="cart">${ic("cart")}${cartCount()?`<i class="dot">${cartCount()}</i>`:""}</button></div>
+   <div class="search" data-a="tab" data-v="search"><span>${ic("search")}</span><input placeholder="ابحث عن منتج… رز، زيت، لبن" readonly></div></header>`+
+  `<main class="main home">
    ${!S.session?`<div class="card row" style="margin-top:12px;background:var(--gold-soft);border-color:transparent"><span style="font-size:24px">👋</span><div class="sp sm b">سجّل دخولك عشان تطلب وتتابع طلباتك</div><button class="btn sm gold" data-a="tologin">دخول</button></div>`:""}
    <div class="carousel" id="car"><div class="slides">
     <div class="banner"><h3>عروض الأسبوع 🔥</h3><p>خصومات لحد 20% على الزيت والفراخ والحلويات</p><button class="btn" data-a="go" data-v="cat" data-x="offers">تسوق العروض</button><div class="big">🛍️</div></div>
@@ -516,7 +718,7 @@ function custHome(){
    ${S.coupon?`<div class="coupon" style="margin-top:10px"><span style="font-size:24px">🎟️</span><div class="sp sm"><b>عندك كوبون: ${esc(S.coupon.l)}</b><div class="xs muted">هيتطبق أوتوماتيك في السلة • صالح النهارده</div></div></div>`:""}
    <div class="card row" style="margin-top:10px;padding:10px 14px"><span style="font-size:22px">🛵</span><div class="sp sm"><b>توصيل مجاني</b> للطلبات فوق 300 ج.م • التوصيل خلال 45 دقيقة</div></div>
    <div class="sec"><h2>الأقسام</h2><a data-a="tab" data-v="cats">الكل</a></div>
-   <div class="cats anim">${CATS.map(([k,n,e])=>`<button class="cat" data-a="go" data-v="cat" data-x="${k}"><span>${e}</span>${n}</button>`).join("")}</div>
+   <div class="cats anim">${CATS.map(([k,n,e])=>`<button class="cat" data-a="go" data-v="cat" data-x="${k}" style="--c:var(--c-${k})"><span>${e}</span>${n}</button>`).join("")}</div>
    <div class="sec"><h2>عروض اليوم</h2><a data-a="go" data-v="cat" data-x="offers">عرض الكل</a></div>
    <div class="hscroll anim">${offers.map(pcard).join("")}</div>
    <div class="sec"><h2>الأكثر مبيعاً</h2></div>
@@ -524,7 +726,7 @@ function custHome(){
   </main>${spunToday()?"":`<button class="wheel-fab" data-a="wheel"><span>🎡</span><b>اكسب</b></button>`}`;
 }
 function custCats(){
-  return topbar("الأقسام")+`<main class="main"><div class="col anim">${CATS.map(([k,n,e])=>{const c=S.products.filter(p=>p.c===k).length;return `<button class="card row" data-a="go" data-v="cat" data-x="${k}"><span class="ico" style="font-size:28px">${e}</span><div class="sp" style="text-align:start"><b>${n}</b><div class="xs muted">${c} منتج</div></div><span class="muted">←</span></button>`}).join("")}</div></main>`;
+  return topbar("الأقسام")+`<main class="main"><div class="col anim">${CATS.map(([k,n,e])=>{const c=S.products.filter(p=>p.c===k).length;return `<button class="card row" data-a="go" data-v="cat" data-x="${k}"><span class="ico" style="font-size:28px;background:var(--c-${k})">${e}</span><div class="sp" style="text-align:start"><b>${n}</b><div class="xs muted">${c} منتج</div></div><span class="muted">←</span></button>`}).join("")}</div></main>`;
 }
 function custCat(){
   const k=R.x;const list=k==="offers"?S.products.filter(p=>p.offer):S.products.filter(p=>p.c===k);
@@ -532,7 +734,7 @@ function custCat(){
   return topbar(name)+`<main class="main"><div class="chips" style="margin-bottom:12px"><button class="chip ${k==="offers"?"on":""}" data-a="rgo" data-v="cat" data-x="offers">🔥 العروض</button>${CATS.map(([c,n])=>`<button class="chip ${c===k?"on":""}" data-a="rgo" data-v="cat" data-x="${c}">${n}</button>`).join("")}</div><div class="pgrid anim">${list.map(pcard).join("")}</div></main>`;
 }
 function custSearch(){
-  return topbar("البحث")+`<main class="main"><div class="search"><span>🔍</span><input id="q" placeholder="اكتب اسم المنتج" autocomplete="off"></div><div id="qr" style="margin-top:12px"></div></main>`;
+  return topbar("البحث")+`<main class="main"><div class="search"><span>${ic("search")}</span><input id="q" placeholder="اكتب اسم المنتج" autocomplete="off"></div><div id="qr" style="margin-top:12px"></div></main>`;
 }
 function searchResults(q){
   q=q.trim();const el=$("#qr");if(!el)return;
@@ -542,7 +744,7 @@ function searchResults(q){
 }
 function prodSheet(id){
   const p=prod(id);let q=p.kg?1:1;
-  const s=sheet(`<div style="height:170px;border-radius:18px;background:var(--surface);display:grid;place-items:center;font-size:96px;border:1px solid var(--line)">${p.e}</div>
+  const s=sheet(`<div class="pimg" style="--c:var(--c-${p.c})">${p.e}</div>
    <h2 style="margin-top:14px">${esc(p.n)}</h2>
    <div class="row"><b style="font-size:24px;color:var(--accent)">${fmt(price(p))}</b>${p.offer?`<s class="muted">${fmt(p.p)}</s><span class="tag t-red">وفّر ${fmt(p.p-p.offer)}</span>`:""}<span class="sp"></span><span class="xs muted">${p.kg?"سعر الكيلو":"سعر القطعة"}</span></div>
    <div class="sm muted" style="margin:8px 0 14px">${CATS.find(c=>c[0]===p.c)[1]} • ${p.st>0?(p.st<=p.min?`<span style="color:var(--warn)">باقي كمية قليلة</span>`:"متوفر"):`<span style="color:var(--sale)">غير متوفر حالياً</span>`}</div>
@@ -558,7 +760,7 @@ function totalsHTML(t){const c=S.coupon;return `<div class="tot"><span>المج�
 function custCart(){
   if(!S.cart.length)return topbar("السلة")+`<main class="main"><div class="empty"><div>🛒</div><b>السلة فاضية</b><p>ابدأ التسوق وضيف منتجاتك</p><button class="btn pri" data-a="tab" data-v="home">تسوق دلوقتي</button></div></main>`;
   const sub=cartSub(),fee=sub>=300?0:15;
-  return topbar(`السلة (${cartCount()})`,{right:`<button class="ib" data-a="clearcart">🗑️</button>`})+`<main class="main">
+  return topbar(`السلة (${cartCount()})`,{right:`<button class="ib" data-a="clearcart">${ic("trash")}</button>`})+`<main class="main">
    <div class="card list">${S.cart.map((l,i)=>{const p=prod(l.id);return `<div class="li"><span class="ico">${p.e}</span><div class="sp" style="min-width:0"><b class="sm">${esc(p.n)}</b><div class="xs muted">${fmt(price(p))} ${p.kg?"/ كجم":""}</div><b style="color:var(--accent)">${fmt(price(p)*l.q)}</b></div><div class="step"><button data-a="cq" data-v="${i}" data-x="1">+</button><b class="sm">${qty(p,l.q)}</b><button data-a="cq" data-v="${i}" data-x="-1">−</button></div></div>`}).join("")}</div>
    ${sub<300?`<div class="card sm" style="margin-top:10px;background:var(--gold-soft);border-color:transparent">🛵 ضيف بـ <b>${fmt(300-sub)}</b> كمان وخد التوصيل مجاناً</div>`:`<div class="card sm" style="margin-top:10px;background:var(--soft);border-color:transparent">🎉 طلبك له توصيل مجاني</div>`}
    ${S.coupon?`<div class="coupon" style="margin-top:10px"><span style="font-size:24px">🎟️</span><div class="sp sm"><b>كوبون العجلة: ${esc(S.coupon.l)}</b><div class="xs muted">اتطبق على طلبك</div></div></div>`:spunToday()?"":`<button class="coupon" style="margin-top:10px;width:100%;text-align:start" data-a="wheel"><span style="font-size:24px">🎡</span><div class="sp sm"><b>لف العجلة واكسب خصم على الطلب ده!</b></div><span class="link">لف ←</span></button>`}
@@ -626,17 +828,17 @@ function adminShell(){
   const newO=S.orders.filter(o=>o.st===0).length;
   const role=S.session.role;
   const items=[];
-  if(can("dash"))items.push(["dash","📊","الرئيسية"]);
-  if(can("pos"))items.push(["pos","🧾","الكاشير"]);
-  if(can("orders"))items.push(["orders","🛵","الطلبات",newO||""]);
-  if(can("inv"))items.push(["inv","📦","المخزون",S.products.filter(p=>p.st<=p.min).length||""]);
-  items.push(["more","☰","المزيد"]);
+  if(can("dash"))items.push(["dash","chart","الرئيسية"]);
+  if(can("pos"))items.push(["pos","receipt","الكاشير"]);
+  if(can("orders"))items.push(["orders","truck","الطلبات",newO||""]);
+  if(can("inv"))items.push(["inv","boxes","المخزون",S.products.filter(p=>p.st<=p.min).length||""]);
+  items.push(["more","menu","المزيد"]);
   return v+bnav(items);
 }
 const today=()=>S.sales.filter(s=>s.t>=startOf(0)&&!s.ret);
 function aTop(title){
   const newO=S.orders.filter(o=>o.st===0).length;
-  return topbar(title,{logo:!hist.length,right:`${can("orders")?`<button class="ib" data-a="tab" data-v="orders">🔔${newO?`<i class="dot">${newO}</i>`:""}</button>`:""}<button class="ib" data-a="tab" data-v="more" style="font-size:15px;font-weight:900">${esc(S.session.name.replace("أ. ","")[0])}</button>`});
+  return topbar(title,{logo:!hist.length,right:`${can("orders")?`<button class="ib" data-a="tab" data-v="orders">${ic("bell")}${newO?`<i class="dot">${newO}</i>`:""}</button>`:""}<button class="ib" data-a="tab" data-v="more" style="font-size:15px;font-weight:900">${esc(S.session.name.replace("أ. ","")[0])}</button>`});
 }
 function aDash(){
   const t=today(),y=S.sales.filter(s=>s.t>=startOf(1)&&s.t<startOf(0)&&!s.ret);
@@ -650,10 +852,10 @@ function aDash(){
   return aTop("لوحة التحكم")+`<main class="main">
    <div class="row" style="margin-bottom:12px"><div><div class="sm muted">${new Date().toLocaleDateString("ar-EG",{weekday:"long",day:"numeric",month:"long"})}</div><h2 style="font-size:20px;font-weight:900">صباح الخير، ${esc(S.session.name)} ☀️</h2></div></div>
    <div class="grid2 k4 anim">
-    <div class="kpi"><div class="l">مبيعات النهارده</div><div class="v num">${fmt0(ts)}<small class="sm"> ج.م</small></div><div class="d ${pct>=0?"up":"dn"}">${pct>=0?"▲":"▼"} ${Math.abs(pct)}% عن امبارح</div></div>
-    <div class="kpi"><div class="l">عدد الفواتير</div><div class="v num">${t.length}</div><div class="d muted">متوسط ${fmt0(t.length?ts/t.length:0)} ج.م</div></div>
-    <div class="kpi"><div class="l">طلبات أونلاين</div><div class="v num">${onl.length}</div><div class="d" style="color:var(--warn)">${S.orders.filter(o=>o.st===0).length} جديد مستني</div></div>
-    <div class="kpi"><div class="l">ربح تقديري</div><div class="v num">${fmt0(profit)}<small class="sm"> ج.م</small></div><div class="d muted">هامش ${ts?Math.round(profit/ts*100):0}%</div></div>
+    <div class="kpi hero"><i class="ki">${ic("money")}</i><div class="l">مبيعات النهارده</div><div class="v num">${fmt0(ts)}<small class="sm"> ج.م</small></div><div class="d ${pct>=0?"up":"dn"}">${pct>=0?"▲":"▼"} ${Math.abs(pct)}% عن امبارح</div></div>
+    <div class="kpi"><i class="ki k-b">${ic("receipt")}</i><div class="l">عدد الفواتير</div><div class="v num">${t.length}</div><div class="d muted">متوسط ${fmt0(t.length?ts/t.length:0)} ج.م</div></div>
+    <div class="kpi"><i class="ki k-o">${ic("bag")}</i><div class="l">طلبات أونلاين</div><div class="v num">${onl.length}</div><div class="d" style="color:var(--warn)">${S.orders.filter(o=>o.st===0).length} جديد مستني</div></div>
+    <div class="kpi"><i class="ki k-p">${ic("trend")}</i><div class="l">ربح تقديري</div><div class="v num">${fmt0(profit)}<small class="sm"> ج.م</small></div><div class="d muted">هامش ${ts?Math.round(profit/ts*100):0}%</div></div>
    </div>
    <div class="card" style="margin-top:12px"><div class="row"><b>مبيعات آخر 7 أيام</b><span class="sp"></span><a class="link" data-a="go" data-v="reports">التقارير ←</a></div>
     <div class="bars">${days.map(x=>`<div class="bc"><small class="num">${fmt0(x.v/1000*10)/10}k</small><div class="bar ${x.d===0?"hl":""}" style="height:${x.v/mx*100}%"></div><small>${x.d===0?"النهارده":new Date(startOf(x.d)).toLocaleDateString("ar-EG",{weekday:"short"})}</small></div>`).join("")}</div></div>
@@ -674,7 +876,7 @@ const posTot=()=>Math.max(0,r2(posSub()-P_().disc));
 function aPos(){
   const lines=P_().lines,n=lines.length;
   const pill=S.online?`<span class="offline-pill" style="background:rgba(255,255,255,.14)">🟢 متصل</span>`:`<span class="offline-pill" style="background:var(--sale);color:#fff">📴 أوفلاين${S.queue.length?` (${S.queue.length})`:""}</span>`;
-  return topbar("الكاشير",{right:`<button data-a="net">${pill}</button><button class="ib" data-a="held">⏸️${P_().held.length?`<i class="dot">${P_().held.length}</i>`:""}</button>`})+`<main class="main" style="padding-bottom:150px">
+  return topbar("الكاشير",{right:`<button data-a="net">${pill}</button><button class="ib" data-a="held">${ic("pause")}${P_().held.length?`<i class="dot">${P_().held.length}</i>`:""}</button>`})+`<main class="main" style="padding-bottom:150px">
    ${!S.shift.open?`<div class="card row" style="background:var(--sale-soft);border-color:transparent;margin-bottom:10px"><b class="sp sm">الوردية مقفولة</b><button class="btn sm pri" data-a="go" data-v="shift">افتح وردية</button></div>`:""}
    ${!S.online?`<div class="card sm" style="background:var(--warn-soft);border-color:transparent;margin-bottom:10px">📴 بتشتغل أوفلاين. الفواتير بتتحفظ على الجهاز وهتتزامن أول ما النت يرجع.</div>`:""}
    <div class="pos-scan"><input id="scan" placeholder="📷 امسح الباركود أو اكتب اسم الصنف" autocomplete="off" value="${esc(posQ)}"><button class="btn pri" data-a="scango">إضافة</button></div>
@@ -686,7 +888,7 @@ function aPos(){
 }
 function posTiles(){
   const list=S.products.filter(p=>(posCat==="all"||p.c===posCat)&&(!posQ||p.n.includes(posQ)||p.bc.includes(posQ)));
-  return list.map(p=>`<button class="tile" data-a="padd" data-v="${p.id}">${p.kg?'<span class="kg">وزن</span>':""}<div class="e">${p.e}</div><b>${esc(p.n)}</b><span class="p">${fmt(price(p))}</span><span class="s ${p.st<=p.min?"low":""}">مخزون: ${qty(p,p.st)}</span></button>`).join("")||`<div class="empty" style="grid-column:1/-1">مفيش أصناف</div>`;
+  return list.map(p=>`<button class="tile" data-a="padd" data-v="${p.id}" style="--c:var(--c-${p.c})">${p.kg?'<span class="kg">وزن</span>':""}<div class="e">${p.e}</div><b>${esc(p.n)}</b><span class="p">${fmt(price(p))}</span><span class="s ${p.st<=p.min?"low":""}">مخزون: ${qty(p,p.st)}</span></button>`).join("")||`<div class="empty" style="grid-column:1/-1">مفيش أصناف</div>`;
 }
 function posAdd(id,q){
   const p=prod(id);
@@ -804,7 +1006,7 @@ function orderNext(id){
 let invF="all",invQ="";
 function aInv(){
   if(R.x==="low"){invF="low";R.x=null}
-  return aTop("المخزون")+`<main class="main"><div class="search"><span>🔍</span><input id="iq" placeholder="بحث بالاسم أو الباركود" value="${esc(invQ)}" autocomplete="off"></div>
+  return aTop("المخزون")+`<main class="main"><div class="search"><span>${ic("search")}</span><input id="iq" placeholder="بحث بالاسم أو الباركود" value="${esc(invQ)}" autocomplete="off"></div>
   <div class="chips" style="margin:10px 0">${[["all","الكل"],["low","منخفض"],["out","نفد"],["offer","عليه عرض"]].map(([k,n])=>`<button class="chip ${invF===k?"on":""}" data-a="invf" data-v="${k}">${n}</button>`).join("")}</div>
   <div class="grid2" style="margin-bottom:10px"><div class="kpi"><div class="l">قيمة المخزون (تكلفة)</div><div class="v num" style="font-size:18px">${fmt(S.products.reduce((a,p)=>a+p.cost*p.st,0))}</div></div><div class="kpi"><div class="l">عدد الأصناف</div><div class="v num" style="font-size:18px">${S.products.length}</div></div></div>
   <div class="card list" id="il">${invList()}</div>${can("inv")?`<button class="fab" data-a="newprod">+</button>`:""}</main>`;
