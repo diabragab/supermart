@@ -416,10 +416,31 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent);background:va
 .splash .logo i{color:var(--hot)}
 .splash .tag2{color:#eafff5}
 
+
+/* still re-render: no entry animation replay */
+#app.still .main,#app.still .anim>*{animation:none!important}
+/* add-to-cart effect */
+.flyer{width:48px;height:48px;border-radius:50%;background:var(--surface);display:grid;place-items:center;font-size:28px;box-shadow:0 10px 24px -6px rgba(8,40,28,.45);top:0;left:0}
+@keyframes cartHit{0%{transform:none}20%{transform:scale(1.28) rotate(-12deg)}45%{transform:scale(.9) rotate(8deg)}70%{transform:scale(1.08) rotate(-3deg)}100%{transform:none}}
+.bnav button.hit span,.hero-top .ib.hit,.top .ib.hit{animation:cartHit .6s cubic-bezier(.3,.7,.3,1.3)}
+.bnav button.hit span{background:var(--soft);color:var(--accent)}
+.bnav button.on.hit span{background:var(--grad);color:#fff}
+.cring{position:fixed;z-index:94;width:46px;height:46px;border-radius:50%;border:3px solid var(--accent);pointer-events:none}
+.plus1{position:fixed;z-index:95;color:var(--hot);font-weight:700;font-size:16px;pointer-events:none;text-shadow:0 2px 6px rgba(0,0,0,.15)}
+/* preloader */
+.splash .pl-items{display:flex;gap:10px;justify-content:center;margin-top:26px;height:44px;align-items:flex-end}
+.splash .pl-items span{font-size:28px;display:inline-block;animation:plHop 1.1s ease-in-out infinite;filter:drop-shadow(0 6px 6px rgba(0,0,0,.2))}
+.splash .pl-items span:nth-child(2){animation-delay:.12s}.splash .pl-items span:nth-child(3){animation-delay:.24s}.splash .pl-items span:nth-child(4){animation-delay:.36s}.splash .pl-items span:nth-child(5){animation-delay:.48s}
+@keyframes plHop{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-14px) scale(1.1)}}
+.splash .pl-bar{width:180px;height:6px;border-radius:9px;background:rgba(255,255,255,.22);margin:20px auto 0;overflow:hidden}
+.splash .pl-bar i{display:block;height:100%;width:0;border-radius:9px;background:#fff;animation:plFill 1.7s cubic-bezier(.4,0,.2,1) forwards}
+.splash.done .pl-bar i{width:100%;animation:none;transition:width .2s}
+@keyframes plFill{0%{width:0}60%{width:72%}100%{width:92%}}
+.splash .pl-txt{color:rgba(255,255,255,.85);font-size:12.5px;margin-top:10px;animation:fadeUp .5s .3s both}
 </style>
 </head>
 <body>
-<div class="splash" id="splash"><i class="blob b1"></i><i class="blob b2"></i><div style="text-align:center;overflow:hidden;position:relative"><div class="logo">B<i>&amp;</i>M</div><div class="tag2">سوبر ماركت • كل احتياجات بيتك</div><div style="height:56px;margin-top:10px"><span class="cartgo">🛒</span></div></div></div>
+<div class="splash" id="splash"><i class="blob b1"></i><i class="blob b2"></i><div style="text-align:center;overflow:hidden;position:relative"><div class="logo">B<i>&amp;</i>M</div><div class="tag2">سوبر ماركت • كل احتياجات بيتك</div><div class="pl-items"><span>🥬</span><span>🧀</span><span>🥖</span><span>🍎</span><span>🥛</span></div><div class="pl-bar"><i></i></div><div class="pl-txt">جاري تجهيز المتجر…</div></div></div>
 <div id="app"></div>
 <div id="ovs"></div>
 <div class="toast" id="toast" hidden></div>
@@ -637,9 +658,11 @@ function closeSheet(){const o=$("#ovs").lastElementChild;if(o)o.remove()}
 function closeAll(){$("#ovs").innerHTML=""}
 
 /* ================= RENDER ================= */
+let lastView="";
 function render(){
   document.documentElement.dataset.theme=S.theme;
   const app=$("#app");
+  const vk=(S.session?S.session.type:"none")+"|"+(R.tab||"")+"|"+(R.x||"");app.classList.toggle("still",vk===lastView);lastView=vk;
   if(!S.session&&!guest)return app.innerHTML=loginView();
   if(isStaff())app.innerHTML=adminShell();
   else app.innerHTML=custShell();
@@ -753,7 +776,8 @@ function prodSheet(id){
   s.querySelectorAll("[data-q]").forEach(b=>b.onclick=()=>{q=Math.max(step,r2(q+(b.dataset.q==="+"?step:-step)));s.querySelector("#pq").textContent=qty(p,q);s.querySelector("#pt").textContent=fmt(price(p)*q)});
   const a=s.querySelector("#padd");if(a)a.onclick=()=>{const r=s.querySelector(".sheet>div:nth-child(2)").getBoundingClientRect();if(addCart(p.id,q)!==false){closeSheet();flyToCart(p.e,r)}};
 }
-function addCart(id,q){const p=prod(id);q=q||(p.kg?1:1);const l=S.cart.find(x=>x.id===id);const cur=l?l.q:0;if(cur+q>p.st){toast(`⚠️ المتاح من ${p.n}: ${qty(p,p.st)} بس`);return false}if(l)l.q=r2(l.q+q);else S.cart.push({id,q});vib();toast(`✓ اتضاف للسلة: ${p.n}`);render()}
+function addCart(id,q){const p=prod(id);q=q||(p.kg?1:1);const l=S.cart.find(x=>x.id===id);const cur=l?l.q:0;if(cur+q>p.st){toast(`⚠️ المتاح من ${p.n}: ${qty(p,p.st)} بس`);return false}if(l)l.q=r2(l.q+q);else S.cart.push({id,q});vib();save();if(R.tab==="cart")render();else updCartBadges();toast(`✓ اتضاف للسلة: ${p.n}`)}
+function updCartBadges(){const n=cartCount();document.querySelectorAll('[data-a=tab][data-v=cart]').forEach(b=>{let d=b.querySelector(".dot");if(!n){if(d)d.remove();return}if(!d){d=document.createElement("i");d.className="dot";b.appendChild(d)}d.textContent=n})}
 function couponDisc(sub){const c=S.coupon;if(!c)return 0;if(c.t==="pct")return r2(Math.min(sub*c.v/100,100));if(c.t==="amt")return sub>=(c.min||150)?Math.min(c.v,sub):0;return 0}
 function cartTotals(delivery){const sub=cartSub();let fee=delivery&&sub<300?15:0;if(S.coupon&&S.coupon.t==="ship")fee=0;const disc=couponDisc(sub);return{sub,fee,disc,total:r2(Math.max(0,sub+fee-disc))}}
 function totalsHTML(t){const c=S.coupon;return `<div class="tot"><span>المجموع</span><b>${fmt(t.sub)}</b></div><div class="tot"><span>التوصيل</span><b>${t.fee?fmt(t.fee):"مجاني"+(c&&c.t==="ship"?" 🎡":"")}</b></div>${t.disc?`<div class="tot" style="color:var(--sale)"><span>🎡 خصم العجلة (${esc(c.l)})</span><b>- ${fmt(t.disc)}</b></div>`:""}${c&&c.t==="amt"&&!t.disc?`<div class="xs" style="color:var(--warn)">🎟️ كوبون ${esc(c.l)} بيتفعل للطلبات فوق ${c.min||150} ج.م</div>`:""}<div class="tot big"><span>الإجمالي</span><span>${fmt(t.total)}</span></div>`}
@@ -1123,13 +1147,21 @@ function aSettings(){
 
 /* ================= EFFECTS ================= */
 const RM=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches;
+function cartHit(){
+  document.querySelectorAll('[data-a=tab][data-v=cart]').forEach(b=>{
+    b.classList.remove("hit");void b.offsetWidth;b.classList.add("hit");
+    const d=b.querySelector(".dot");if(d){d.classList.remove("bump");void d.offsetWidth;d.classList.add("bump")}
+    if(b.offsetParent&&document.body.animate){const r=b.getBoundingClientRect(),ring=document.createElement("i");ring.className="cring";ring.style.left=(r.left+r.width/2)+"px";ring.style.top=(r.top+r.height/2)+"px";document.body.appendChild(ring);ring.animate([{transform:"translate(-50%,-50%) scale(.4)",opacity:.9},{transform:"translate(-50%,-50%) scale(2.1)",opacity:0}],{duration:600,easing:"ease-out"}).onfinish=()=>ring.remove();
+      const pl=document.createElement("b");pl.className="plus1";pl.textContent="+1";pl.style.left=(r.left+r.width/2)+"px";pl.style.top=r.top+"px";document.body.appendChild(pl);pl.animate([{transform:"translate(-50%,0)",opacity:0},{transform:"translate(-50%,-22px)",opacity:1,offset:.3},{transform:"translate(-50%,-44px)",opacity:0}],{duration:900,easing:"ease-out"}).onfinish=()=>pl.remove()}
+  });
+}
 function flyToCart(emoji,from){
-  const tgt=document.querySelector('.bnav [data-v=cart]')||document.querySelector('.top [data-v=cart]');
-  const bump=()=>{const d=document.querySelector('.bnav [data-v=cart] .dot');if(d){d.classList.remove("bump");void d.offsetWidth;d.classList.add("bump")}};
-  if(RM||!tgt||!from||!document.body.animate)return bump();
+  const cands=[...document.querySelectorAll('[data-a=tab][data-v=cart]')].filter(b=>b.offsetParent);
+  const tgt=cands.find(b=>b.closest(".bnav"))||cands[0];
+  if(RM||!tgt||!from||!document.body.animate)return cartHit();
   const t=tgt.getBoundingClientRect();const el=document.createElement("div");el.className="flyer";el.textContent=emoji;document.body.appendChild(el);
-  const x0=from.left+from.width/2-17,y0=from.top+from.height/2-20,x1=t.left+t.width/2-17,y1=t.top+t.height/2-20;
-  el.animate([{transform:`translate(${x0}px,${y0}px) scale(1)`,opacity:1},{transform:`translate(${(x0+x1)/2}px,${Math.min(y0,y1)-120}px) scale(1.4)`,opacity:1,offset:.45},{transform:`translate(${x1}px,${y1}px) scale(.3)`,opacity:.6}],{duration:750,easing:"cubic-bezier(.45,0,.3,1)"}).onfinish=()=>{el.remove();bump()};
+  const x0=from.left+from.width/2-24,y0=from.top+from.height/2-24,x1=t.left+t.width/2-24,y1=t.top+t.height/2-24;
+  el.animate([{transform:`translate(${x0}px,${y0}px) scale(.6) rotate(0)`,opacity:0},{transform:`translate(${x0}px,${y0-18}px) scale(1.15) rotate(-10deg)`,opacity:1,offset:.15},{transform:`translate(${(x0+x1)/2}px,${Math.min(y0,y1)-110}px) scale(1) rotate(10deg)`,opacity:1,offset:.55},{transform:`translate(${x1}px,${y1}px) scale(.25) rotate(0)`,opacity:.7}],{duration:800,easing:"cubic-bezier(.45,0,.3,1)"}).onfinish=()=>{el.remove();cartHit()};
 }
 function confetti(n){
   if(RM||!document.body.animate)return;
@@ -1280,7 +1312,7 @@ render=function(){_render();startCarousel();if(R.tab==="search")setTimeout(()=>{
 render();
 syncAccounts();
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)syncAccounts()});
-setTimeout(()=>{const s=$("#splash");s.style.opacity=0;s.style.transform="scale(1.08)";s.style.transition="opacity .45s,transform .45s";setTimeout(()=>s.remove(),450)},1500);
+const _t0=Date.now();Promise.race([document.fonts&&document.fonts.ready||Promise.resolve(),new Promise(r=>setTimeout(r,2500))]).then(()=>setTimeout(()=>{const s=$("#splash");s.classList.add("done");s.style.opacity=0;s.style.transform="scale(1.08)";s.style.transition="opacity .45s,transform .45s";setTimeout(()=>s.remove(),450)},Math.max(0,1900-(Date.now()-_t0))));
 </script>
 </body>
 </html>
