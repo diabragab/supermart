@@ -590,9 +590,14 @@ const dbUrl=p=>`https://firestore.googleapis.com/v1/projects/${encodeURIComponen
 function fetchT(u,o){const c=new AbortController();const t=setTimeout(()=>c.abort(),7000);return fetch(u,Object.assign({signal:c.signal},o||{})).finally(()=>clearTimeout(t))}
 function toF(o){const f={};for(const k in o){const v=o[k];if(v==null)continue;if(typeof v==="number")f[k]=Number.isInteger(v)?{integerValue:String(v)}:{doubleValue:v};else if(typeof v==="boolean")f[k]={booleanValue:v};else if(Array.isArray(v))f[k]={arrayValue:{values:v.map(x=>({stringValue:String(x)}))}};else f[k]={stringValue:String(v)}}return{fields:f}}
 function fromF(d){const o={},f=d.fields||{};for(const k in f){const v=f[k];o[k]=v.stringValue!==undefined?v.stringValue:v.integerValue!==undefined?+v.integerValue:v.doubleValue!==undefined?v.doubleValue:v.booleanValue!==undefined?v.booleanValue:v.arrayValue?(v.arrayValue.values||[]).map(x=>x.stringValue):null}return o}
-async function dbList(col){const r=await fetchT(dbUrl(col)+"&pageSize=1000");if(!r.ok)throw new Error("HTTP "+r.status);const j=await r.json();return(j.documents||[]).map(fromF)}
-async function dbGet(col,id){const r=await fetchT(dbUrl(col+"/"+encodeURIComponent(id)));if(r.status===404)return null;if(!r.ok)throw new Error("HTTP "+r.status);return fromF(await r.json())}
-async function dbPut(col,id,o){const r=await fetchT(dbUrl(col+"/"+encodeURIComponent(id)),{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify(toF(o))});if(!r.ok)throw new Error("HTTP "+r.status)}
+async function fsErr(r){const j=await r.json().catch(()=>({}));return new Error(j.error&&(j.error.status||j.error.message)||"HTTP "+r.status)}
+async function fsFetch(path,o,qs){o=Object.assign({},o||{});const h=Object.assign({},o.headers||{});const t=PROD?await token():null;if(t)h.Authorization="Bearer "+t;o.headers=h;return fetchT(dbUrl(path)+(qs||""),o)}
+const withId=d=>Object.assign(fromF(d),{_id:d.name.split("/").pop()});
+async function dbList(col){let out=[],pt="";do{const r=await fsFetch(col,null,"&pageSize=300"+(pt?"&pageToken="+encodeURIComponent(pt):""));if(!r.ok)throw await fsErr(r);const j=await r.json();out=out.concat((j.documents||[]).map(withId));pt=j.nextPageToken||""}while(pt);return out}
+async function dbGet(col,id){const r=await fsFetch(col+"/"+encodeURIComponent(id));if(r.status===404)return null;if(!r.ok)throw await fsErr(r);return withId(await r.json())}
+/* merge=true → only the given fields are written (others stay as they are) */
+async function dbPut(col,id,o,merge){const b=toF(o);const qs=merge?Object.keys(b.fields).map(k=>"&updateMask.fieldPaths="+encodeURIComponent(k)).join(""):"";const r=await fsFetch(col+"/"+encodeURIComponent(id),{method:"PATCH",headers:{"Content-Type":"application/json"},body:JSON.stringify(b)},qs);if(!r.ok)throw await fsErr(r)}
+async function dbDel(col,id){const r=await fsFetch(col+"/"+encodeURIComponent(id),{method:"DELETE"});if(!r.ok)throw await fsErr(r)}
 const pubCust=c=>({phone:c.phone,name:c.name,addr:c.addr||[],pts:c.pts||0,since:c.since||Date.now(),ph:c.ph||pwHash(c.phone,c.pass)});
 const pubStaff=u=>({u:u.u,name:u.name,role:u.role,ph:u.ph||pwHash(u.u,u.pass)});
 function mergeCust(rc){const l=S.customers.find(c=>c.phone===rc.phone);if(l&&l.dirty)return;if(l){Object.assign(l,rc);delete l.pass}else S.customers.push(rc)}
@@ -600,6 +605,7 @@ function mergeStaff(ru){const l=S.users.find(u=>u.u===ru.u);if(l&&l.dirty)return
 function markDirty(acc){acc.dirty=true;save();pushDirty()}
 async function pushDirty(){
   if(!DB.on)return;
+  if(PROD){if(!S.auth)return;try{await pushDirtyProd();DB.status="online";DB.last=Date.now()}catch(e){DB.status="error"}save();return}
   try{
     for(const c of S.customers.filter(x=>x.dirty)){await dbPut("customers",c.phone,pubCust(c));c.ph=c.ph||pwHash(c.phone,c.pass);delete c.dirty}
     for(const u of S.users.filter(x=>x.dirty)){await dbPut("staff",u.u,pubStaff(u));u.ph=u.ph||pwHash(u.u,u.pass);delete u.dirty}
@@ -609,6 +615,7 @@ async function pushDirty(){
 }
 async function syncAccounts(manual){
   if(!DB.on){if(manual)toast("قاعدة البيانات الأونلاين مش متظبطة لسه");return}
+  if(PROD)return syncProd(manual);
   if(DB.busy)return;DB.busy=true;
   try{
     await pushDirty();
@@ -625,7 +632,7 @@ async function syncAccounts(manual){
 }
 /* fetch a single account fresh from the server before login / register */
 async function fetchAcc(id){
-  if(!DB.on)return;
+  if(!DB.on||PROD)return;
   try{
     const isPhone=/^01\d{9}$/.test(id);
     const d=await dbGet(isPhone?"customers":"staff",id);
@@ -633,8 +640,173 @@ async function fetchAcc(id){
     DB.status="online";return d;
   }catch(e){DB.status="error"}
 }
-const dbCard=()=>`<div class="card row" style="margin-bottom:10px"><span style="font-size:22px">🗄️</span><div class="sp sm"><b>قاعدة بيانات الحسابات</b> ${dbBadge()}<div class="xs muted">${!DB.on?"الحسابات محفوظة على الجهاز ده بس":DB.last?"آخر مزامنة "+tm(DB.last):"Firebase Firestore"}</div></div>${DB.on?`<button class="btn sm" data-a="dbsync">🔄 تحديث</button>`:""}</div>`;
-const dbBadge=()=>!DB.on?`<span class="tag t-gray">💾 على الموبايل</span>`:DB.status==="online"?`<span class="tag t-green">☁️ أونلاين</span>`:DB.status==="error"?`<span class="tag t-red">📴 مفيش اتصال</span>`:`<span class="tag t-gold">⏳ جاري الاتصال</span>`;
+/* ================= PRODUCTION AUTH (Firebase Authentication + Firestore "users") =================
+   Turned on when config.js has projectId + apiKey (and auth !== false).
+   Customers sign in with their mobile number, staff with a username. Both are Firebase
+   Email/Password accounts behind the scenes (<phone>@customers… / <username>@staff…),
+   which works on the free Spark plan. Role + profile live in Firestore users/{uid}. */
+const PROD=!!(CFG.projectId&&CFG.apiKey&&CFG.auth!==false);
+const DOM_C="customers.bm-market.app",DOM_S="staff.bm-market.app";
+const STAFF_ROLES=["owner","manager","cashier","inventory","accountant"];
+let memPw=null,OWNER_FREE=false;
+if(PROD&&S.acct!=="fb"){S.users=[];S.customers=[];S.session=null;S.auth=null;S.creds={};S.acct="fb";save()} /* drop demo accounts once */
+const idEmail=id=>{id=String(id||"").trim().toLowerCase().replace(/\s/g,"");if(id.includes("@"))return id;if(/^01\d{9}$/.test(id))return id+"@"+DOM_C;return id+"@"+DOM_S};
+const AERR={EMAIL_EXISTS:"الحساب ده متسجل قبل كده",EMAIL_NOT_FOUND:"الحساب ده مش موجود",INVALID_PASSWORD:"كلمة السر غلط",INVALID_LOGIN_CREDENTIALS:"رقم الموبايل/اسم المستخدم أو كلمة السر غلط",USER_DISABLED:"الحساب ده موقوف",TOO_MANY_ATTEMPTS_TRY_LATER:"محاولات كتير غلط – استنى شوية وجرّب تاني",WEAK_PASSWORD:"كلمة السر ضعيفة – 6 حروف على الأقل",INVALID_EMAIL:"اسم المستخدم مش صحيح",MISSING_PASSWORD:"اكتب كلمة السر",OPERATION_NOT_ALLOWED:"الدخول بكلمة السر مش مفعّل في Firebase (Authentication → Email/Password)",CONFIGURATION_NOT_FOUND:"Firebase Authentication مش متفعّل في المشروع",PERMISSION_DENIED:"مش مسموح بالعملية دي (راجع قواعد Firestore)",API_KEY_INVALID:"مفتاح Firebase (apiKey) غلط في config.js"};
+const isNet=e=>e&&(e.name==="AbortError"||e instanceof TypeError);
+const aErr=e=>{if(isNet(e))return"📴 مفيش إنترنت – جرّب تاني";const m=String(e&&e.message||"");const c=m.split(/[ :]/)[0];return AERR[c]||(m.includes("API key")?AERR.API_KEY_INVALID:"حصل خطأ: "+m)};
+const credHash=(email,p)=>sha256("bm2:"+email+":"+p);
+async function authCall(m,body){
+  const r=await fetchT(`https://identitytoolkit.googleapis.com/v1/accounts:${m}?key=${encodeURIComponent(CFG.apiKey)}`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+  const j=await r.json().catch(()=>({}));if(!r.ok)throw new Error(j.error&&j.error.message||"HTTP "+r.status);return j}
+function setAuth(j){S.auth={uid:j.localId||j.user_id,idToken:j.idToken||j.id_token,refreshToken:j.refreshToken||j.refresh_token,exp:Date.now()+(+(j.expiresIn||j.expires_in)||3600)*1000};save()}
+async function token(){
+  if(!S.auth||!S.auth.refreshToken)return null;
+  if(Date.now()<S.auth.exp-120e3)return S.auth.idToken;
+  const r=await fetchT(`https://securetoken.googleapis.com/v1/token?key=${encodeURIComponent(CFG.apiKey)}`,{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:"grant_type=refresh_token&refresh_token="+encodeURIComponent(S.auth.refreshToken)});
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok){if(r.status===400){S.auth=null;save()}throw new Error(j.error&&j.error.message||"HTTP "+r.status)}
+  setAuth(j);return S.auth.idToken}
+async function dbCommit(writes){
+  const t=await token();const base=`projects/${CFG.projectId}/databases/(default)/documents`;
+  const r=await fetchT(`https://firestore.googleapis.com/v1/${base}:commit?key=${encodeURIComponent(CFG.apiKey)}`,{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+t},
+    body:JSON.stringify({writes:writes.map(([path,o])=>({update:Object.assign({name:base+"/"+path},toF(o)),currentDocument:{exists:false}}))})});
+  if(!r.ok)throw await fsErr(r)}
+function profOf(uid,d){if(!d)return null;if(d.role==="customer")return{type:"cust",uid,phone:d.phone,name:d.name};if(STAFF_ROLES.includes(d.role))return{type:"staff",uid,u:d.u||"",name:d.name,role:d.role};return null}
+/* put a Firestore user doc into the local lists (customers / staff) */
+function applyUser(uid,d){
+  if(d.role==="customer"){const o={uid,phone:d.phone,name:d.name,addr:d.addr||[],pts:d.pts||0,since:d.since||Date.now(),email:d.email||""};
+    const l=S.customers.find(c=>c.uid===uid||c.phone===o.phone);if(l&&l.dirty)return l;if(l)return Object.assign(l,o);S.customers.push(o);return o}
+  if(STAFF_ROLES.includes(d.role)){const o={uid,u:d.u||"",name:d.name,role:d.role,phone:d.phone||""};
+    const l=S.users.find(x=>x.uid===uid);if(l)return Object.assign(l,o);S.users.push(o);return o}
+}
+async function pushDirtyProd(){
+  for(const c of S.customers.filter(x=>x.dirty&&x.uid)){
+    const mine=S.session&&S.session.uid===c.uid;
+    await dbPut("users",c.uid,mine?{name:c.name,addr:c.addr||[],pts:c.pts||0}:{pts:c.pts||0},true);delete c.dirty}
+  for(const u of S.users.filter(x=>x.dirty&&x.uid)){await dbPut("users",u.uid,{name:u.name,role:u.role},true);delete u.dirty}
+}
+function forceLogout(msg){S.session=null;S.auth=null;memPw=null;guest=false;R={tab:"login"};hist.length=0;closeAll();save();render();if(msg)toast(msg)}
+async function syncProd(manual){
+  if(!S.session){DB.status="local";return}
+  if(DB.busy)return;DB.busy=true;
+  try{
+    /* came in offline → sign in for real once the internet is back */
+    if(!S.auth&&memPw){const j=await authCall("signInWithPassword",{email:memPw.email,password:memPw.p,returnSecureToken:true});setAuth(j)}
+    if(!S.auth){DB.status=S.session.offline?"error":"local";DB.busy=false;if(!S.session.offline)forceLogout("سجّل دخولك تاني");else if(manual)toast("📴 لسه مفيش اتصال");return}
+    if(S.auth.uid!==S.session.uid){DB.busy=false;return forceLogout("سجّل دخولك تاني")}
+    await pushDirtyProd();
+    if(isStaff()){
+      const mine=await dbGet("users",S.session.uid);
+      if(!mine||!STAFF_ROLES.includes(mine.role)){DB.busy=false;return forceLogout("الحساب ده اتشال من الموظفين")}
+      Object.assign(S.session,{role:mine.role,name:mine.name});
+      const docs=await dbList("users");const seen=new Set(docs.map(d=>d._id));
+      docs.forEach(d=>applyUser(d._id,d));
+      S.customers=S.customers.filter(c=>c.dirty||(c.uid&&seen.has(c.uid)));S.users=S.users.filter(u=>seen.has(u.uid));
+      if(manual)toast(`🔄 اتزامن: ${S.customers.length} عميل • ${S.users.length} موظف`);
+    }else{
+      const d=await dbGet("users",S.session.uid);
+      if(!d){DB.busy=false;return forceLogout("الحساب ده مش موجود")}
+      applyUser(S.session.uid,d);if(manual)toast("🔄 اتزامن");
+    }
+    delete S.session.offline;DB.status="online";DB.last=Date.now();
+  }catch(e){
+    DB.status="error";
+    if(!isNet(e)&&!S.auth&&!(S.session&&S.session.offline)){DB.busy=false;return forceLogout("انتهت الجلسة – سجّل دخولك تاني")}
+    if(manual)toast(isNet(e)?"📴 مش قادر يوصل للسيرفر – شغال على الموبايل":aErr(e));
+  }
+  DB.busy=false;save();
+  if(S.session&&["customers","staff","settings","profile","more"].includes(R.tab))render();
+}
+function startSession(prof,offline,email,p){
+  const after=R.after;
+  if(email&&p){S.creds=S.creds||{};S.creds[email]={h:credHash(email,p),prof}}
+  S.session=Object.assign({},prof,offline?{offline:true}:{});
+  if(prof.type==="staff")R={tab:prof.role==="cashier"?"pos":"dash"};
+  else{const c=me();if(c&&S.pendingPts){c.pts+=S.pendingPts;S.pendingPts=0;markDirty(c)}R={tab:after||"home"}}
+  hist.length=0;guest=false;closeAll();render();
+  toast((offline?"📴 دخول بدون إنترنت – ":"")+`أهلاً ${String(prof.name||"").split(" ")[0]} 👋`);
+  if(!offline)syncAccounts();
+}
+async function doLoginProd(id,p){
+  id=String(id||"").trim();if(!id||!p)return toast("اكتب رقم الموبايل/اسم المستخدم وكلمة السر");
+  const email=idEmail(id);toast("⏳ جاري تسجيل الدخول…");
+  let j;
+  try{j=await authCall("signInWithPassword",{email,password:p,returnSecureToken:true})}
+  catch(e){
+    if(isNet(e)){const c=(S.creds||{})[email];if(c&&c.h===credHash(email,p)){memPw={email,p};S.auth=null;return startSession(c.prof,true)}return toast("📴 مفيش إنترنت – أول دخول على الموبايل ده لازم يكون أونلاين")}
+    return toast(aErr(e));
+  }
+  setAuth(j);
+  let d;
+  try{
+    d=await dbGet("users",j.localId);
+    if(!d&&email.endsWith("@"+DOM_C)){ /* account made but profile was never saved → repair it */
+      d={role:"customer",name:"عميل",phone:email.split("@")[0],addr:[],pts:0,since:Date.now()};await dbPut("users",j.localId,d)}
+  }catch(e){S.auth=null;save();return toast(aErr(e))}
+  const prof=profOf(j.localId,d);
+  if(!prof){S.auth=null;save();return toast("الحساب ده مش مفعّل – كلّم إدارة الفرع")}
+  applyUser(j.localId,d);memPw=null;
+  startSession(prof,false,email,p);
+}
+async function registerProd(){
+  const v=id=>{const e=$("#"+id);return e?e.value.trim():""};
+  const n=v("l_name"),ph=v("l_user").replace(/\s/g,""),ad=v("l_addr"),em=v("l_email"),p=$("#l_pass").value,p2=$("#l_pass2").value;
+  if(n.length<2)return toast("اكتب اسمك");
+  if(!/^01[0125]\d{8}$/.test(ph))return toast("رقم الموبايل لازم يكون 11 رقم ويبدأ بـ 010 أو 011 أو 012 أو 015");
+  if(em&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em))return toast("الإيميل مش صحيح");
+  if(p.length<6)return toast("كلمة السر 6 حروف أو أرقام على الأقل");
+  if(p!==p2)return toast("تأكيد كلمة السر مش زي كلمة السر");
+  toast("⏳ جاري إنشاء الحساب…");
+  const email=idEmail(ph);
+  try{
+    const j=await authCall("signUp",{email,password:p,returnSecureToken:true});setAuth(j);
+    const doc={role:"customer",name:n,phone:ph,addr:ad?[ad]:[],pts:50,since:Date.now()};if(em)doc.email=em;
+    await dbPut("users",j.localId,doc);
+    applyUser(j.localId,doc);loginMode="login";
+    startSession(profOf(j.localId,doc),false,email,p);setTimeout(()=>toast("🎉 أهلاً بيك! هدية 50 نقطة"),1300);
+  }catch(e){toast(e.message==="EMAIL_EXISTS"?"الرقم ده متسجل قبل كده – ادخل بيه من تسجيل الدخول":aErr(e))}
+}
+async function checkOwner(){try{const d=await dbGet("meta","owner");const was=OWNER_FREE;OWNER_FREE=!d;if(was!==OWNER_FREE&&!S.session)render()}catch(e){}}
+function ownerSetup(){
+  const s=sheet(`<h2>👑 حساب المالك</h2><p class="sm muted">ده بيتعمل مرة واحدة بس. بعد كده الزرار ده بيختفي، والمالك بيضيف الموظفين من "الموظفين".</p><div class="col">
+   <div><label class="lbl">الاسم</label><input id="o_n" placeholder="مثلاً: أ. دياب"></div>
+   <div><label class="lbl">اسم المستخدم (إنجليزي)</label><input id="o_u" class="ltr" value="admin" autocomplete="off"></div>
+   <div><label class="lbl">رقم الموبايل</label><input id="o_ph" class="ltr" inputmode="tel" placeholder="01xxxxxxxxx"></div>
+   <div><label class="lbl">كلمة السر</label><input id="o_p" type="password" placeholder="8 حروف أو أرقام على الأقل"></div>
+   <div><label class="lbl">تأكيد كلمة السر</label><input id="o_p2" type="password"></div>
+   <button class="btn pri blk" id="ook">إنشاء حساب المالك</button></div>`);
+  s.querySelector("#ook").onclick=async()=>{
+    const g=id=>s.querySelector(id).value.trim();const n=g("#o_n"),u=g("#o_u").toLowerCase(),ph=g("#o_ph"),p=s.querySelector("#o_p").value;
+    if(n.length<2)return toast("اكتب الاسم");if(!/^[a-z][a-z0-9._-]{2,19}$/.test(u))return toast("اسم المستخدم: حروف إنجليزي صغيرة وأرقام (3 حروف على الأقل)");
+    if(ph&&!/^01[0125]\d{8}$/.test(ph))return toast("رقم الموبايل مش صحيح");if(p.length<8)return toast("كلمة سر المالك 8 حروف على الأقل");if(p!==s.querySelector("#o_p2").value)return toast("تأكيد كلمة السر مش زيها");
+    toast("⏳ جاري الإنشاء…");const email=idEmail(u);
+    try{
+      let j;try{j=await authCall("signUp",{email,password:p,returnSecureToken:true})}catch(e){if(e.message!=="EMAIL_EXISTS")throw e;j=await authCall("signInWithPassword",{email,password:p,returnSecureToken:true})}
+      setAuth(j);const doc={role:"owner",name:n,u,phone:ph,since:Date.now()};
+      await dbCommit([["users/"+j.localId,doc],["meta/owner",{uid:j.localId,at:Date.now()}]]);
+      OWNER_FREE=false;applyUser(j.localId,doc);startSession(profOf(j.localId,doc),false,email,p);
+    }catch(e){S.auth=null;save();toast(String(e.message).includes("FAILED_PRECONDITION")?"حساب المالك اتعمل قبل كده":aErr(e));checkOwner()}
+  };
+}
+function newStaffProd(){
+  const s=sheet(`<h2>موظف جديد</h2><div class="col"><div><label class="lbl">الاسم</label><input id="s_n"></div><div><label class="lbl">اسم المستخدم (إنجليزي)</label><input id="s_u" class="ltr" autocomplete="off" placeholder="مثلاً: ahmed"></div><div><label class="lbl">رقم الموبايل (اختياري)</label><input id="s_ph" class="ltr" inputmode="tel" placeholder="01xxxxxxxxx"></div><div><label class="lbl">كلمة السر</label><input id="s_p" class="ltr" placeholder="6 حروف أو أرقام على الأقل"></div><div><label class="lbl">الصلاحية</label><select id="s_r">${Object.entries(ROLES).filter(([k])=>k!=="owner").map(([k,n])=>`<option value="${k}">${n}</option>`).join("")}</select></div><button class="btn pri blk" id="sok">إضافة</button></div>`);
+  s.querySelector("#sok").onclick=async()=>{
+    const g=id=>s.querySelector(id).value.trim();const n=g("#s_n"),u=g("#s_u").toLowerCase(),ph=g("#s_ph"),p=s.querySelector("#s_p").value,r=s.querySelector("#s_r").value;
+    if(n.length<2)return toast("اكتب اسم الموظف");if(!/^[a-z][a-z0-9._-]{2,19}$/.test(u))return toast("اسم المستخدم: حروف إنجليزي صغيرة وأرقام (3 حروف على الأقل)");
+    if(ph&&!/^01[0125]\d{8}$/.test(ph))return toast("رقم الموبايل مش صحيح");if(p.length<6)return toast("كلمة السر 6 حروف على الأقل");
+    toast("⏳ جاري الإضافة…");
+    try{const j=await authCall("signUp",{email:idEmail(u),password:p,returnSecureToken:true});const doc={role:r,name:n,u,phone:ph,since:Date.now()};
+      await dbPut("users",j.localId,doc);applyUser(j.localId,doc);closeSheet();render();toast(`✓ اتضاف – يدخل بـ ${u}`)}
+    catch(e){toast(e.message==="EMAIL_EXISTS"?"اسم المستخدم ده موجود – اختار اسم تاني":aErr(e))}
+  };
+}
+function delStaff(uid){
+  const u=S.users.find(x=>x.uid===uid);if(!u)return;
+  const s=sheet(`<h2>حذف ${esc(u.name)}؟</h2><p class="sm muted">مش هيقدر يدخل البرنامج تاني. لو حبيت ترجّعه اعمله حساب جديد باسم مستخدم مختلف.</p><button class="btn red blk" id="dok">حذف الموظف</button>`);
+  s.querySelector("#dok").onclick=async()=>{try{await dbDel("users",uid);S.users=S.users.filter(x=>x.uid!==uid);closeSheet();render();toast("✓ اتحذف")}catch(e){toast(aErr(e))}};
+}
+const dbCard=()=>`<div class="card row" style="margin-bottom:10px"><span style="font-size:22px">🗄️</span><div class="sp sm"><b>قاعدة بيانات الحسابات</b> ${dbBadge()}<div class="xs muted">${!DB.on?"الحسابات محفوظة على الجهاز ده بس":S.session&&S.session.offline?"شغال بدون إنترنت – هيتزامن لما النت يرجع":DB.last?"آخر مزامنة "+tm(DB.last):PROD?"Firebase – حسابات حقيقية":"Firebase Firestore"}</div></div>${DB.on?`<button class="btn sm" data-a="dbsync">🔄 تحديث</button>`:""}</div>`;
+const dbBadge=()=>S.session&&S.session.offline?`<span class="tag t-gold">📴 بدون إنترنت</span>`:!DB.on?`<span class="tag t-gray">💾 على الموبايل</span>`:DB.status==="online"?`<span class="tag t-green">☁️ أونلاين</span>`:DB.status==="error"?`<span class="tag t-red">📴 مفيش اتصال</span>`:`<span class="tag t-gold">⏳ جاري الاتصال</span>`;
 
 /* ================= ROUTER ================= */
 let R={tab:"home"};const hist=[];
@@ -683,11 +855,13 @@ function loginView(){
    <div class="seg" style="margin-bottom:14px"><button class="${!reg?"on":""}" data-a="lmode" data-v="login">تسجيل الدخول</button><button class="${reg?"on":""}" data-a="lmode" data-v="reg">حساب جديد</button></div>
    <form id="lf" class="col" onsubmit="return false">
     ${reg?`<div><label class="lbl">الاسم</label><input id="l_name" placeholder="اسمك بالكامل"></div>`:""}
-    <div><label class="lbl">${reg?"رقم الموبايل":"رقم الموبايل أو اسم المستخدم"}</label><input id="l_user" class="ltr" style="text-align:right" inputmode="${reg?"tel":"text"}" placeholder="${reg?"01xxxxxxxxx":"01xxxxxxxxx / admin"}" autocomplete="off"></div>
-    <div><label class="lbl">كلمة السر</label><input id="l_pass" type="password" placeholder="••••"></div>
+    <div><label class="lbl">${reg?"رقم الموبايل":"رقم الموبايل أو اسم المستخدم"}</label><input id="l_user" class="ltr" style="text-align:right" inputmode="${reg?"tel":"text"}" placeholder="${reg?"01xxxxxxxxx":PROD?"01xxxxxxxxx":"01xxxxxxxxx / admin"}" autocomplete="off"></div>
+    ${reg&&PROD?`<div><label class="lbl">العنوان (للتوصيل)</label><input id="l_addr" placeholder="المنطقة – الشارع – رقم العمارة والدور"></div><div><label class="lbl">الإيميل (اختياري)</label><input id="l_email" class="ltr" style="text-align:right" inputmode="email" placeholder="name@example.com" autocomplete="off"></div>`:""}
+    <div><label class="lbl">كلمة السر</label><input id="l_pass" type="password" placeholder="${PROD?"6 حروف أو أرقام على الأقل":"••••"}"></div>
+    ${reg&&PROD?`<div><label class="lbl">تأكيد كلمة السر</label><input id="l_pass2" type="password" placeholder="اكتبها تاني"></div>`:""}
     <button class="btn pri blk" data-a="${reg?"register":"login"}">${reg?"إنشاء الحساب":"دخول"}</button>
    </form>
-   ${reg?`<p class="xs muted" style="margin:10px 0 0">التسجيل هنا للعملاء فقط. حسابات الموظفين بيعملها المدير من لوحة التحكم.</p>`:`
+   ${reg?`<p class="xs muted" style="margin:10px 0 0">التسجيل هنا للعملاء فقط. حسابات الموظفين بيعملها المدير من لوحة التحكم.</p>`:PROD?`<p class="xs muted" style="margin:10px 0 0">الموظفين: ادخل باسم المستخدم اللي المدير عملهولك.</p>${OWNER_FREE?`<button class="btn gold blk" style="margin-top:10px" data-a="ownersetup">👑 إعداد حساب المالك (أول مرة بس)</button>`:""}`:`
    <div class="demo"><div class="xs b muted">حسابات تجريبية للعرض (اضغط للدخول):</div>
     <button data-a="quick" data-v="admin">👑 <b>المالك / الأدمن</b><span class="sp"></span><span class="ltr muted xs">admin / 1234</span></button>
     <button data-a="quick" data-v="cashier">🧾 <b>كاشير</b><span class="sp"></span><span class="ltr muted xs">cashier / 1234</span></button>
@@ -696,9 +870,10 @@ function loginView(){
    </div>`}
   </div>
   <div style="text-align:center;padding:18px"><button class="link" data-a="guest">تصفح المنتجات كزائر ←</button></div>
-  <div class="xs muted" style="text-align:center;padding-bottom:20px">نسخة عرض تجريبية • كل البيانات وهمية</div></div>`;
+  <div class="xs muted" style="text-align:center;padding-bottom:20px">${PROD?"B&amp;M سوبر ماركت":"نسخة عرض تجريبية • كل البيانات وهمية"}</div></div>`;
 }
 async function doLogin(u,p){
+  if(PROD)return doLoginProd(u,p);
   u=(u||"").trim();
   if(DB.on&&u){toast("⏳ جاري التحقق…");await fetchAcc(/^01\d{9}$/.test(u)?u:u.toLowerCase())}
   const st=S.users.find(x=>x.u===u.toLowerCase());
@@ -807,6 +982,7 @@ function checkoutSheet(){
   s.querySelectorAll("[data-ad]").forEach(b=>b.onclick=()=>{addr=+b.dataset.ad;s.querySelectorAll("[data-ad]").forEach(x=>x.classList.toggle("on",x===b))});
   upd();
   s.querySelector("#place").onclick=()=>{
+    if(type==="delivery"&&!c.addr.length){closeAll();go("profile");return toast("📍 ضيف عنوان التوصيل الأول")}
     const short=S.cart.find(l=>l.q>prod(l.id).st);if(short){const p=prod(short.id);return toast(`⚠️ المتاح من ${p.n}: ${qty(p,p.st)} بس – عدّل السلة`)}
     const items=S.cart.map(l=>{const p=prod(l.id);return{id:p.id,n:p.n,e:p.e,q:l.q,p:price(p)}});
     const T=cartTotals(type==="delivery"),sub=T.sub,fee=T.fee;
@@ -1118,11 +1294,12 @@ function aCustomers(){
   <div class="card list">${S.customers.map(c=>{const os=S.orders.filter(o=>o.phone===c.phone&&o.st>=0);return `<div class="li"><span class="av">${esc(c.name[0])}</span><div class="sp sm"><b>${esc(c.name)}</b><div class="xs muted ltr" style="text-align:right">${c.phone}</div><div class="xs muted">${os.length} طلب • ${fmt(os.reduce((a,o)=>a+o.total,0))}</div></div><span class="tag t-gold">🎁 ${c.pts}</span></div>`}).join("")}</div></main>`;
 }
 function aStaff(){
-  return aTop("الموظفين")+`<main class="main">${dbCard()}<div class="card sm" style="background:var(--info-soft);border-color:transparent;margin-bottom:10px">🔐 كل موظف بيشوف بس الأقسام اللي مسموح له بيها. جرّب تدخل بحساب <b class="ltr">cashier</b> أو <b class="ltr">store</b>.</div>
-  <div class="card list">${S.users.map(u=>`<div class="li"><span class="av">${esc(u.name.replace("أ. ","")[0])}</span><div class="sp sm"><b>${esc(u.name)}</b><div class="xs muted ltr" style="text-align:right">${u.u}</div></div><span class="tag ${u.role==="owner"?"t-gold":"t-blue"}">${ROLES[u.role]}</span></div>`).join("")}</div>
+  return aTop("الموظفين")+`<main class="main">${dbCard()}<div class="card sm" style="background:var(--info-soft);border-color:transparent;margin-bottom:10px">🔐 كل موظف بيشوف بس الأقسام اللي مسموح له بيها. ${PROD?"الموظف بيدخل باسم المستخدم وكلمة السر اللي إنت بتحددهم.":`جرّب تدخل بحساب <b class="ltr">cashier</b> أو <b class="ltr">store</b>.`}</div>
+  <div class="card list">${S.users.map(u=>`<div class="li"><span class="av">${esc(u.name.replace("أ. ","")[0])}</span><div class="sp sm"><b>${esc(u.name)}</b><div class="xs muted ltr" style="text-align:right">${u.u}</div></div><span class="tag ${u.role==="owner"?"t-gold":"t-blue"}">${ROLES[u.role]}</span>${PROD&&S.session.role==="owner"&&u.role!=="owner"&&u.uid?`<button class="btn sm red" data-a="delstaff" data-v="${u.uid}">حذف</button>`:""}</div>`).join("")}</div>
   ${S.session.role==="owner"?`<button class="fab" data-a="newstaff">+</button>`:""}</main>`;
 }
 function newStaff(){
+  if(PROD)return newStaffProd();
   const s=sheet(`<h2>موظف جديد</h2><div class="col"><div><label class="lbl">الاسم</label><input id="s_n"></div><div><label class="lbl">اسم المستخدم</label><input id="s_u" class="ltr"></div><div><label class="lbl">كلمة السر</label><input id="s_p" value="1234"></div><div><label class="lbl">الصلاحية</label><select id="s_r">${Object.entries(ROLES).filter(([k])=>k!=="owner").map(([k,n])=>`<option value="${k}">${n}</option>`).join("")}</select></div><button class="btn pri blk" id="sok">إضافة</button></div>`);
   s.querySelector("#sok").onclick=()=>{const n=s.querySelector("#s_n").value.trim(),u=s.querySelector("#s_u").value.trim().toLowerCase();if(!n||!u)return toast("كمّل البيانات");if(S.users.some(x=>x.u===u))return toast("اسم المستخدم موجود");const nu={u,name:n,pass:s.querySelector("#s_p").value,role:s.querySelector("#s_r").value};S.users.push(nu);markDirty(nu);closeSheet();render();toast("✓ اتضاف الموظف")};
 }
@@ -1239,11 +1416,11 @@ const A={
   lmode:v=>{loginMode=v;render()},
   login:()=>doLogin($("#l_user").value,$("#l_pass").value),
   quick:v=>doLogin(v,"1234"),
-  register:async()=>{const n=$("#l_name").value.trim(),u=$("#l_user").value.trim(),p=$("#l_pass").value;if(!n||!/^01\d{9}$/.test(u)||p.length<4)return toast("اكتب الاسم ورقم موبايل صحيح (11 رقم) وكلمة سر 4 حروف على الأقل");if(S.customers.some(c=>c.phone===u))return toast("الرقم ده متسجل قبل كده");const ex=DB.on?await fetchAcc(u):null;if(ex)return toast("الرقم ده متسجل قبل كده");
+  register:async()=>{if(PROD)return registerProd();const n=$("#l_name").value.trim(),u=$("#l_user").value.trim(),p=$("#l_pass").value;if(!n||!/^01\d{9}$/.test(u)||p.length<4)return toast("اكتب الاسم ورقم موبايل صحيح (11 رقم) وكلمة سر 4 حروف على الأقل");if(S.customers.some(c=>c.phone===u))return toast("الرقم ده متسجل قبل كده");const ex=DB.on?await fetchAcc(u):null;if(ex)return toast("الرقم ده متسجل قبل كده");
     sheet(`<h2>تأكيد رقم الموبايل</h2><p class="sm muted">بعتنالك كود على <span class="ltr">${u}</span> (للعرض: الكود هو <b>1234</b>)</p><input id="otp" inputmode="numeric" class="ltr" style="text-align:center;font-size:24px;letter-spacing:10px" maxlength="4"><button class="btn pri blk" style="margin-top:12px" id="otpok">تأكيد</button>`).querySelector("#otpok").onclick=()=>{if($("#otp").value!=="1234")return toast("الكود غلط");const nc={phone:u,pass:p,name:n,addr:["القاهرة – عنوان تجريبي"],pts:50,since:Date.now()};S.customers.push(nc);markDirty(nc);closeAll();loginMode="login";doLogin(u,p);toast("🎉 أهلاً بيك! هدية 50 نقطة")}},
   guest:()=>{guest=true;R={tab:"home"};S.session=null;render()},
   tologin:()=>{guest=false;S.session=null;R={tab:"login"};loginMode="login";render()},
-  logout:()=>{guest=false;S.session=null;R={tab:"login"};hist.length=0;closeAll();render()},
+  logout:()=>{guest=false;S.session=null;S.auth=null;memPw=null;R={tab:"login"};hist.length=0;closeAll();render()},
   theme:v=>{S.theme=v;render()},
   prod:v=>prodSheet(+v),
   addcart:(v,b)=>{const p=prod(+v);if(p.kg)return prodSheet(p.id);const r=b.getBoundingClientRect();if(addCart(p.id,1)!==false)flyToCart(p.e,r)},
@@ -1283,6 +1460,8 @@ const A={
   export:()=>toast("⬇️ التقرير اتصدّر Excel – وضع العرض"),
   viewinv:v=>invDetail(v),
   newstaff:()=>newStaff(),
+  ownersetup:()=>ownerSetup(),
+  delstaff:v=>delStaff(v),
   wheel:()=>wheelSheet(),
   dbsync:()=>syncAccounts(true),
   cashio:v=>{const s=sheet(`<h2>${v==="in"?"إيداع نقدية":"سحب / مصروف"}</h2><label class="lbl">المبلغ</label><input id="cv" type="number" inputmode="decimal"><label class="lbl" style="margin-top:8px">السبب</label><input placeholder="${v==="in"?"فكة":"مصاريف نظافة"}"><button class="btn pri blk" style="margin-top:12px" id="cok">حفظ</button>`);s.querySelector("#cok").onclick=()=>{const a=+s.querySelector("#cv").value;if(!a)return;S.shift[v==="in"?"cashIn":"cashOut"]+=a;closeSheet();render();toast("✓ اتسجل")}},
@@ -1303,7 +1482,7 @@ document.addEventListener("input",e=>{
 });
 document.addEventListener("keydown",e=>{
   if(e.key==="Enter"&&e.target.id==="scan"){e.preventDefault();scan(e.target.value)}
-  if(e.key==="Enter"&&(e.target.id==="l_pass"||e.target.id==="l_user")){e.preventDefault();(loginMode==="reg"?A.register:A.login)()}
+  if(e.key==="Enter"&&["l_pass","l_user","l_pass2"].includes(e.target.id)){e.preventDefault();(loginMode==="reg"?A.register:A.login)()}
 });
 /* inner click on product card's add button must not open sheet */
 document.addEventListener("click",e=>{},true);
@@ -1311,6 +1490,7 @@ const _render=render;
 render=function(){_render();startCarousel();if(R.tab==="search")setTimeout(()=>{const q=$("#q");if(q){searchResults(q.value);q.focus()}},0)};
 render();
 syncAccounts();
+if(PROD&&!S.session)checkOwner();
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)syncAccounts()});
 const _t0=Date.now();Promise.race([document.fonts&&document.fonts.ready||Promise.resolve(),new Promise(r=>setTimeout(r,2500))]).then(()=>setTimeout(()=>{const s=$("#splash");s.classList.add("done");s.style.opacity=0;s.style.transform="scale(1.08)";s.style.transition="opacity .45s,transform .45s";setTimeout(()=>s.remove(),450)},Math.max(0,1900-(Date.now()-_t0))));
 </script>

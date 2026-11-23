@@ -1,0 +1,73 @@
+rules_version = '2';
+
+// B&M Supermarket – Firestore security rules (production).
+// Paste into Firebase console → Firestore Database → Rules → Publish.
+//
+//   users/{uid}  profile + role of every account (customer, owner, manager, cashier, inventory, accountant)
+//   meta/owner   records who the owner is; once it exists nobody else can become owner
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function userDoc(uid) { return /databases/$(database)/documents/users/$(uid); }
+    function hasProfile() { return signedIn() && exists(userDoc(request.auth.uid)); }
+    function myRole() { return get(userDoc(request.auth.uid)).data.role; }
+    function isStaff() { return hasProfile() && myRole() in ['owner', 'manager', 'cashier', 'inventory', 'accountant']; }
+    function isOwner() { return hasProfile() && myRole() == 'owner'; }
+    function employeeRoles() { return ['manager', 'cashier', 'inventory', 'accountant']; }
+    function okName(d) { return d.name is string && d.name.size() > 0 && d.name.size() <= 60; }
+    function changed() { return request.resource.data.diff(resource.data).affectedKeys(); }
+
+    match /meta/owner {
+      allow get: if true;   // the app checks if the one-time owner setup is still open
+      allow list, update, delete: if false;
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['uid', 'at'])
+        && request.resource.data.uid == request.auth.uid
+        && getAfter(userDoc(request.auth.uid)).data.role == 'owner';
+    }
+
+    match /users/{uid} {
+      allow get: if signedIn() && (request.auth.uid == uid || isStaff());
+      allow list: if isStaff();
+
+      allow create: if signedIn() && okName(request.resource.data) && (
+        // 1) a customer registers himself (phone must match his login)
+        (request.auth.uid == uid
+          && request.resource.data.keys().hasOnly(['role', 'name', 'phone', 'addr', 'pts', 'since', 'email'])
+          && request.resource.data.role == 'customer'
+          && request.resource.data.phone is string
+          && request.auth.token.email == request.resource.data.phone + '@customers.bm-market.app'
+          && request.resource.data.get('pts', 0) is int
+          && request.resource.data.get('pts', 0) <= 50)
+        // 2) the one-time owner setup (only while meta/owner does not exist yet)
+        || (request.auth.uid == uid
+          && request.resource.data.role == 'owner'
+          && !exists(/databases/$(database)/documents/meta/owner)
+          && getAfter(/databases/$(database)/documents/meta/owner).data.uid == uid)
+        // 3) the owner adds an employee
+        || (isOwner() && request.resource.data.role in employeeRoles())
+      );
+
+      allow update: if signedIn() && (
+        // a customer edits his own profile (can't change role or phone)
+        (request.auth.uid == uid && resource.data.role == 'customer'
+          && changed().hasOnly(['name', 'addr', 'pts', 'email'])
+          && okName(request.resource.data))
+        // any employee can update a customer's loyalty points
+        || (isStaff() && resource.data.role == 'customer' && changed().hasOnly(['pts']))
+        // the owner edits his own profile (stays owner)
+        || (isOwner() && request.auth.uid == uid && !changed().hasAny(['role']))
+        // the owner edits employees (can't turn anyone into owner)
+        || (isOwner() && resource.data.role in employeeRoles() && request.resource.data.role in employeeRoles())
+      );
+
+      allow delete: if isOwner() && resource.data.role != 'owner';
+    }
+
+    // everything else is closed until it is moved online
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

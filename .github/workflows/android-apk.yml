@@ -31,6 +31,7 @@ jobs:
         run: cp android/app/build/outputs/apk/release/app-release.apk BM-Supermarket-demo.apk
 
       - name: Publish GitHub release
+        if: github.ref == 'refs/heads/android-demo-app'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -39,6 +40,17 @@ jobs:
             --target "${{ github.sha }}" \
             --title "B&M Supermarket – Android demo (build ${{ github.run_number }})" \
             --notes "نسخة عرض تجريبية من تطبيق B&M. نزّل ملف BM-Supermarket-demo.apk على الموبايل وثبّته (فعّل التثبيت من مصادر غير معروفة). حسابات العرض: admin / 1234 ، cashier / 1234 ، store / 1234 ، عميل 01000000000 / 1234."
+
+      - name: Publish pre-release (other branches, never "latest")
+        if: github.ref != 'refs/heads/android-demo-app'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="${GITHUB_REF_NAME//\//-}-v1.0.${{ github.run_number }}"
+          gh release create "$TAG" BM-Supermarket-demo.apk \
+            --target "${{ github.sha }}" --prerelease \
+            --title "B&M Supermarket – ${GITHUB_REF_NAME} (build ${{ github.run_number }})" \
+            --notes "نسخة تجريبية من فرع ${GITHUB_REF_NAME}."
 
       - uses: actions/upload-artifact@v4
         timeout-minutes: 5
