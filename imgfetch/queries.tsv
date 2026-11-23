@@ -1,110 +1,168 @@
-1001	juhayna full cream milk	milk carton
-1002	juhayna skimmed milk	milk carton
-1003	almarai full fat milk	milk carton
-1004	juhayna milk 200ml	milk carton small
-1005	juhayna yoghurt	yogurt cup
-1006	danone yoghurt	yogurt cup
-1007	juhayna rayeb	buttermilk
-1008	domty white cheese	feta cheese
-1009	domty feta	feta cheese
-1010	domty roumy cheese	Rumi cheese
-1011	la vache qui rit	La Vache qui rit
-1012	president cheese portions	processed cheese triangles
-1013	cheddar slices	cheddar cheese slices
-1014	lurpak butter	Lurpak butter
-1015	juhayna cream	cream dairy
-1016		white chicken eggs carton
-1017		brown eggs carton
-1018		tomatoes
-1019		potatoes
-1020		red onions
-1021		cucumbers
-1022		green bell pepper
-1023		zucchini
-1024		eggplant
-1025		carrots
-1026		limes
-1027		bananas
-1028		oranges fruit
-1029		mandarin oranges
-1030		red apples
-1031		guava fruit
-1032		red dates fresh zaghloul
-1033		aish baladi bread
-1034		bread rolls
-1035		sliced bread loaf
-1036		whole wheat sliced bread
-1037	molto croissant	croissant
-1038	twinkies	twinkies cake
-1039		rusk bread sesame
-1040		whole raw chicken
-1041		chicken breast raw
-1042		chicken thighs raw
-1043		raw beef meat
-1044		minced meat raw
-1045	atyab pane	chicken nuggets breaded
-1046	halwani burger	raw burger patties
-1047		sausages raw
-1048		tilapia fish
-1049	sunshine tuna	canned tuna
-1050	el doha rice	egyptian rice grains
-1051	abu kass basmati	basmati rice
-1052	el malika pasta	pasta penne
-1053	regina pasta	spaghetti pasta
-1054	sugar 1kg	white sugar
-1055	crystal sunflower oil	sunflower oil bottle
-1056	afia corn oil	corn oil bottle
-1057	crystal ghee	ghee
-1058	el arosa tea	black tea leaves
-1059	lipton yellow label tea bags	tea bags
-1060	nescafe classic	instant coffee
-1061		turkish coffee ground
-1062		red lentils
-1063	americana foul medames	ful medames
-1064		dried fava beans
-1065		black-eyed peas
-1066	heinz tomato paste	tomato paste
-1067	el doha flour	wheat flour
-1068	sekem salt	salt
-1069	vitrac strawberry jam	strawberry jam
-1070	imtenan honey	honey jar
-1071	el rashidi el mizan halawa	halva
-1072	instant yeast	dry yeast
-1073	pepsi 1l	pepsi bottle
-1074	coca-cola 1l	coca-cola bottle
-1075	7up 1l	7up bottle
-1076	pepsi can	pepsi can
-1077	nestle pure life 1.5l	water bottle
-1078	aquafina	water bottle small
-1079	juhayna pure mango	mango juice
-1080	beyti guava	guava juice
-1081	juhayna classic orange	orange juice
-1082	fayrouz pineapple	pineapple malt drink
-1083	red bull	red bull can
-1084	chipsy chili lemon	potato chips
-1085	chipsy salt	potato chips
-1086	chipsy tomato	potato chips
-1087	doritos cheese	doritos
-1088	bake rolz	bake rolls
-1089	molto mini	mini croissants
-1090	bimbo biscuit	biscuits
-1091	oreo	oreo cookies
-1092	cadbury dairy milk	cadbury dairy milk
-1093	galaxy chocolate	galaxy chocolate
-1094	kitkat 4 finger	kitkat
-1095	corona chocolate hazelnut	chocolate bar hazelnut
-1096	nutella 350g	nutella jar
-1097		sunflower seeds
-1098	persil automatic	laundry detergent powder
-1099	ariel automatic	ariel detergent
-1100	downy fabric softener	fabric softener bottle
-1101	pril dishwashing	dishwashing liquid
-1102	fairy dishwashing liquid	fairy liquid
-1103	clorox bleach	clorox bleach
-1104	dettol antiseptic	dettol
-1105	fine toilet paper	toilet paper rolls
-1106	zeina tissues	facial tissues box
-1107	lux soap	soap bars
-1108	sunsilk shampoo	shampoo bottle
-1109	signal toothpaste	toothpaste
-1110	pampers size 4	diapers pack
+1111	chipsy cheese	potato chips
+1112	chipsy kebab	potato chips
+1113	chipsy salt vinegar	potato chips
+1114	chipsy chili lemon	potato chips
+1115	chipsy salt	potato chips
+1116	chipsy cheese	potato chips
+1117	chipsy tomato	potato chips
+1118	chipsy wavy cheddar	wavy chips
+1119	chipsy wavy	wavy chips
+1120	chipsy black pepper	potato chips
+1121	doritos sweet chili	doritos
+1122	doritos flamin hot	doritos
+1123	cheetos	cheetos
+1124	cheetos flamin hot	cheetos
+1125	tiger chips	potato chips
+1126	bake rolz pizza	bake rolls
+1127	bake rolz cheese	bake rolls
+1128	bake stix	breadsticks
+1129	microwave popcorn	popcorn
+1130	sunbites	baked crackers
+1131	hohos	chocolate cake roll
+1132	todo edita	chocolate cake
+1133	molto magnum	croissant
+1134	molto strawberry	croissant
+1135	freska wafer	wafer chocolate
+1136	bisco misr lux	biscuits
+1137	petit beurre bisco misr	petit beurre biscuits
+1138	shamadan biscuit	biscuits
+1139	mcvities digestive	digestive biscuits
+1140	mars bar	mars bar
+1141	snickers	snickers
+1142	twix	twix
+1143		chewing gum
+1144	trident gum	chewing gum
+1145	white seeds	pumpkin seeds roasted
+1146		watermelon seeds roasted
+1147		roasted seeds
+1148	abu auf seeds	sunflower seeds
+1149		roasted peanuts
+1150		peanuts in shell
+1151	salted peanuts	salted peanuts
+1152	spicy peanuts	coated peanuts
+1153	coated peanuts	coated peanuts
+1154		roasted chickpeas
+1155		lupini beans
+1156	abu auf mixed nuts	mixed nuts
+1157	abu auf cashew	cashew nuts
+1158		almonds roasted
+1159		pistachios
+1160		hazelnuts
+1161		raisins
+1162	baraka water	water bottle
+1163	baraka water	water bottle
+1164	safi water	water bottle
+1165	dasani water	water bottle
+1166	hayat water	water bottle
+1167	siwa water	water bottle
+1168	aquafina	water bottle
+1169	nestle pure life	water bottle
+1170	nestle pure life 6l	water bottle large
+1171	nestle pure life	water bottles pack
+1172	soda water	soda water
+1173	perrier	perrier
+1174	imtenan honey	honey jar
+1175	imtenan citrus honey	honey jar
+1176	isis honey	honey jar
+1177		honey jar
+1178	molasses	molasses
+1179	vitrac apricot	apricot jam
+1180		fig jam
+1181	el rashidi el mizan	halva
+1182	el rashidi tahini	tahini
+1183	halwani pastrami	pastirma
+1184	halwani luncheon	luncheon meat
+1185	lamar milk	milk carton
+1186	obour land cheese	white cheese
+1187	obour land istanbuli	white cheese
+1188	panda cheese	processed cheese
+1189		cottage cheese
+1190	juhayna greek yoghurt	greek yogurt
+1191	juhayna chocolate milk	chocolate milk
+1192	mirinda orange	mirinda
+1193	sprite 1l	sprite bottle
+1194	schweppes	schweppes
+1195	pepsi 2.5l	pepsi bottle
+1196	faragello mango	mango juice
+1197	beyti mango	mango juice
+1198	juhayna guava	guava juice
+1199	lamar apple	apple juice
+1200	fayrouz apple	malt drink
+1201	barbican pomegranate	malt drink
+1202	monster energy	monster energy can
+1203	v7 energy	energy drink can
+1204	lipton ice tea peach	iced tea
+1205	el malika spaghetti	spaghetti
+1206	el malika vermicelli	vermicelli
+1207	sunbulah rice	rice bag
+1208	afia sunflower oil	sunflower oil bottle
+1209	olive oil	olive oil bottle
+1210	al bawadi ghee	ghee
+1211	lipton tea 250g	black tea
+1212	alkbous tea	black tea
+1213	nescafe 3in1	instant coffee sachets
+1214	abu auf coffee	turkish coffee
+1215	cocoa powder	cocoa powder
+1216	dolphin tuna	canned tuna
+1217	heinz foul	ful medames
+1218	tomato paste	tomato paste
+1219	heinz ketchup	ketchup bottle
+1220	heinz mayonnaise	mayonnaise jar
+1221	maggi chicken stock	bouillon cubes
+1222	indomie chicken	instant noodles
+1223	kelloggs corn flakes	corn flakes
+1224	quaker oats	rolled oats
+1225		baking powder
+1226		vanilla sugar
+1227	farm frites	french fries frozen
+1228	frozen peas	frozen peas
+1229	frozen mixed vegetables	frozen mixed vegetables
+1230	frozen molokhia	molokhia
+1231	frozen okra	okra
+1232	halwani kofta	kofta
+1233	ice cream	ice cream tub
+1234	lux body wash	shower gel
+1235	head shoulders	shampoo bottle
+1236	dettol soap	soap bar
+1237	rexona deodorant	deodorant spray
+1238	close up toothpaste	toothpaste
+1239	oral-b toothbrush	toothbrush
+1240	gillette blue	razor
+1241	always pads	sanitary pads
+1242	pampers size 3	diapers pack
+1243	molfix	diapers pack
+1244	fine baby wipes	wet wipes
+1245	omo	detergent powder
+1246	persil gel	laundry detergent liquid
+1247	vibe dishwashing	dishwashing liquid
+1248	dettol 1l	dettol
+1249	glass cleaner	glass cleaner
+1250	fine kitchen towel	paper towels
+1251		garbage bags
+1252		scouring pad
+1253	raid insecticide	insecticide spray
+1254		Cleopatra cigarettes
+1255		Cleopatra cigarettes
+1256		Cleopatra cigarettes
+1257		Marlboro cigarettes pack
+1258		Marlboro Gold
+1259		L&M cigarettes
+1260		L&M cigarettes
+1261		Merit cigarettes
+1262		Rothmans cigarettes
+1263		Winston cigarettes
+1264		Camel cigarettes
+1265		Davidoff cigarettes
+1266		Nakhla shisha tobacco
+1267		Nakhla shisha tobacco
+1268		Nakhla tobacco
+1269		Nakhla tobacco
+1270		Nakhla tobacco
+1271		Nakhla Zaghloul
+1272		Al Fakher shisha tobacco
+1273		Al Fakher
+1274		Al Fakher
+1275		Mazaya shisha tobacco
+1276		Mazaya shisha tobacco
+1277		hookah charcoal
+1278		disposable lighter

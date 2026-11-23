@@ -1,5 +1,5 @@
 name: Fetch product image candidates
-on: {push: {branches: [img-fetch]}}
+on: {push: {branches: [img-fetch2]}}
 permissions: {contents: write}
 jobs:
   fetch:

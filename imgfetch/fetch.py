@@ -14,7 +14,7 @@ for line in open("queries.tsv",encoding="utf-8"):
     pid,off,com=line.rstrip("\n").split("\t");cands=[]
     if off:
         try:
-            q=urllib.parse.urlencode({"search_terms":off,"json":1,"page_size":12,"fields":"code,product_name,brands,image_front_url,countries_tags"})
+            q=urllib.parse.urlencode({"search_terms":off,"json":1,"page_size":8,"fields":"code,product_name,brands,image_front_url,countries_tags"})
             d=json.loads(get("https://world.openfoodfacts.org/cgi/search.pl?"+q))
             ps=[p for p in d.get("products",[]) if p.get("image_front_url")]
             ps.sort(key=lambda p:0 if "en:egypt" in (p.get("countries_tags") or []) else 1)
