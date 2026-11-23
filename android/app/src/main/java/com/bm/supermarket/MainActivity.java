@@ -10,7 +10,6 @@ import android.view.Window;
 import android.os.CancellationSignal;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebResourceRequest;
-import androidx.core.content.ContextCompat;
 import androidx.credentials.Credential;
 import androidx.credentials.CredentialManager;
 import androidx.credentials.CredentialManagerCallback;
@@ -95,7 +94,7 @@ public class MainActivity extends Activity {
         GetSignInWithGoogleOption option = new GetSignInWithGoogleOption.Builder(webClientId).build();
         GetCredentialRequest request = new GetCredentialRequest.Builder().addCredentialOption(option).build();
         CredentialManager.create(this).getCredentialAsync(this, request, new CancellationSignal(),
-            ContextCompat.getMainExecutor(this),
+            new android.os.Handler(android.os.Looper.getMainLooper())::post,
             new CredentialManagerCallback<GetCredentialResponse, GetCredentialException>() {
                 @Override
                 public void onResult(GetCredentialResponse response) {
