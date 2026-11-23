@@ -23,9 +23,15 @@ jobs:
         with:
           gradle-version: "8.9"
 
+      - name: Stamp build number (used by the in-app update check)
+        run: |
+          if [ "$GITHUB_REF_NAME" = "android-demo-app" ]; then CH=demo; else CH="${GITHUB_REF_NAME//\//-}"; fi
+          echo "window.BM_BUILD={n:${{ github.run_number }},ch:\"$CH\"};" > android/app/src/main/assets/www/build.js
+          cat android/app/src/main/assets/www/build.js
+
       - name: Build release APK
         working-directory: android
-        run: gradle assembleRelease --no-daemon
+        run: gradle assembleRelease --no-daemon -PbuildNumber=${{ github.run_number }}
 
       - name: Rename APK
         run: cp android/app/build/outputs/apk/release/app-release.apk BM-Supermarket-demo.apk

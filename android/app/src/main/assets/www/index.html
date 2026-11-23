@@ -445,6 +445,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent);background:va
 <div id="ovs"></div>
 <div class="toast" id="toast" hidden></div>
 <script src="config.js"></script>
+<script src="build.js"></script>
 <script>
 "use strict";
 /* ================= DATA ================= */
@@ -652,7 +653,7 @@ let memPw=null,OWNER_FREE=false;
 if(PROD&&S.acct!=="fb"){S.users=[];S.customers=[];S.orders=[];S.session=null;S.auth=null;S.creds={};S.acct="fb";save()} /* drop demo accounts once */
 if(PROD&&S.session&&S.session.offline&&!S.auth){S.session=null;save()} /* offline password is kept in memory only → after a restart sign in again (works offline too) */
 const idEmail=id=>{id=String(id||"").trim().toLowerCase().replace(/\s/g,"");if(id.includes("@"))return id;if(/^01\d{9}$/.test(id))return id+"@"+DOM_C;return id+"@"+DOM_S};
-const AERR={EMAIL_EXISTS:"الحساب ده متسجل قبل كده",EMAIL_NOT_FOUND:"الحساب ده مش موجود",INVALID_PASSWORD:"كلمة السر غلط",INVALID_LOGIN_CREDENTIALS:"رقم الموبايل/اسم المستخدم أو كلمة السر غلط",USER_DISABLED:"الحساب ده موقوف",TOO_MANY_ATTEMPTS_TRY_LATER:"محاولات كتير غلط – استنى شوية وجرّب تاني",WEAK_PASSWORD:"كلمة السر ضعيفة – 6 حروف على الأقل",INVALID_EMAIL:"اسم المستخدم مش صحيح",MISSING_PASSWORD:"اكتب كلمة السر",OPERATION_NOT_ALLOWED:"الدخول بكلمة السر مش مفعّل في Firebase (Authentication → Email/Password)",CONFIGURATION_NOT_FOUND:"Firebase Authentication مش متفعّل في المشروع",PERMISSION_DENIED:"مش مسموح بالعملية دي (راجع قواعد Firestore)",API_KEY_INVALID:"مفتاح Firebase (apiKey) غلط في config.js"};
+const AERR={EMAIL_EXISTS:"الحساب ده متسجل قبل كده",EMAIL_NOT_FOUND:"الحساب ده مش موجود",INVALID_PASSWORD:"كلمة السر غلط",INVALID_LOGIN_CREDENTIALS:"البيانات أو كلمة السر غلط",USER_DISABLED:"الحساب ده موقوف",TOO_MANY_ATTEMPTS_TRY_LATER:"محاولات كتير غلط – استنى شوية وجرّب تاني",WEAK_PASSWORD:"كلمة السر ضعيفة – 6 حروف على الأقل",INVALID_EMAIL:"اسم المستخدم مش صحيح",MISSING_PASSWORD:"اكتب كلمة السر",OPERATION_NOT_ALLOWED:"الدخول بكلمة السر مش مفعّل في Firebase (Authentication → Email/Password)",CONFIGURATION_NOT_FOUND:"Firebase Authentication مش متفعّل في المشروع",PERMISSION_DENIED:"مش مسموح بالعملية دي (راجع قواعد Firestore)",API_KEY_INVALID:"مفتاح Firebase (apiKey) غلط في config.js"};
 const isNet=e=>e&&(e.name==="AbortError"||e instanceof TypeError);
 const aErr=e=>{if(isNet(e))return"📴 مفيش إنترنت – جرّب تاني";const m=String(e&&e.message||"");const c=m.split(/[ :]/)[0];return AERR[c]||(m.includes("API key")?AERR.API_KEY_INVALID:"حصل خطأ: "+m)};
 const credHash=(email,p)=>sha256("bm2:"+email+":"+p);
@@ -717,6 +718,23 @@ async function syncOrdersProd(){
 }
 async function pushOrdersNow(){if(!PROD||!S.auth)return;try{await pushOrdersProd()}catch(e){}save();render()}
 const newOrderId=()=>"BM-"+Date.now().toString(36).slice(-5).toUpperCase()+Math.floor(Math.random()*36*36).toString(36).toUpperCase().padStart(2,"0");
+/* ---------- in-app update check (new APK on GitHub releases of the same channel) ---------- */
+const BLD=window.BM_BUILD||{n:0,ch:""};
+async function checkUpdate(manual){
+  if(!BLD.n||!BLD.ch){if(manual)toast("النسخة دي مش من البناء الرسمي");return}
+  if(!manual&&Date.now()-(S.updAt||0)<6*36e5)return;
+  try{
+    const r=await fetchT("https://api.github.com/repos/diabragab/supermart/releases?per_page=30");if(!r.ok)throw new Error(r.status);
+    const rels=(await r.json()).filter(x=>x.tag_name.startsWith(BLD.ch+"-v")).map(x=>({n:+x.tag_name.split(".").pop(),url:((x.assets||[]).find(a=>/\.apk$/.test(a.name))||{}).browser_download_url})).filter(x=>x.url&&x.n).sort((a,b)=>b.n-a.n);
+    S.updAt=Date.now();save();
+    const nw=rels[0];
+    if(nw&&nw.n>BLD.n){
+      const s=sheet(`<div class="empty" style="padding:14px 0"><div>🚀</div><h2>فيه تحديث جديد!</h2><p class="muted">نسخة <b class="ltr">1.0.${nw.n}</b> جاهزة (إنت على <span class="ltr">1.0.${BLD.n}</span>).<br>اضغط تحميل، وبعد ما يخلص افتح الملف واضغط "تحديث". بياناتك مش هتتمسح.</p><button class="btn pri blk" id="upd">⬇️ تحميل التحديث</button><button class="btn blk" style="margin-top:8px" id="later">بعدين</button></div>`);
+      s.querySelector("#upd").onclick=()=>{closeSheet();location.href=nw.url};s.querySelector("#later").onclick=()=>closeSheet();
+    }else if(manual)toast("✓ عندك آخر نسخة");
+  }catch(e){if(manual)toast("📴 مش قادر يشيك على التحديثات دلوقتي")}
+}
+const verCard=()=>`<div class="card row" style="margin-top:14px"><span>📱</span><div class="sp sm"><b>نسخة التطبيق</b><div class="xs muted ltr" style="text-align:right">1.0.${BLD.n||0}</div></div><button class="btn sm" data-a="chkupd">🔄 تحقق من التحديثات</button></div>`;
 function forceLogout(msg){S.session=null;S.auth=null;memPw=null;guest=false;R={tab:"login"};hist.length=0;closeAll();save();render();if(msg)toast(msg)}
 async function syncProd(manual){
   if(!S.session){DB.status="local";return}
@@ -760,9 +778,22 @@ function startSession(prof,offline,email,p){
   toast((offline?"📴 دخول بدون إنترنت – ":"")+`أهلاً ${String(prof.name||"").split(" ")[0]} 👋`);
   if(!offline)syncAccounts();
 }
+/* phone or email → the Firebase login behind it (logins/{phone|email}); anything else = staff username */
+async function resolveLogin(id){
+  id=String(id||"").trim().toLowerCase().replace(/\s/g,"");
+  const isPh=/^01\d{9}$/.test(id),isEm=id.includes("@");
+  if(!isPh&&!isEm)return{email:id+"@"+DOM_S};
+  S.loginMap=S.loginMap||{};const cached=S.loginMap[id];
+  try{const d=await dbGet("logins",id);if(d){S.loginMap[id]=d.g?"G":d.e;save();return d.g?{google:true}:{email:d.e}}}
+  catch(e){if(isNet(e)&&cached)return cached==="G"?{google:true}:{email:cached};if(isNet(e))throw e}
+  return{email:isPh?id+"@"+DOM_C:id}; /* accounts made before logins/ existed */
+}
 async function doLoginProd(id,p){
-  id=String(id||"").trim();if(!id||!p)return toast("اكتب رقم الموبايل/اسم المستخدم وكلمة السر");
-  const email=idEmail(id);toast("⏳ جاري تسجيل الدخول…");
+  id=String(id||"").trim();if(!id||!p)return toast("اكتب رقم الموبايل أو الإيميل وكلمة السر");
+  toast("⏳ جاري تسجيل الدخول…");
+  let rl;try{rl=await resolveLogin(id)}catch(e){return toast("📴 مفيش إنترنت – أول دخول على الموبايل ده لازم يكون أونلاين")}
+  if(rl.google)return toast("الحساب ده متسجل بجوجل – اضغط \"المتابعة بحساب جوجل\"");
+  const email=rl.email;
   let j;
   try{j=await authCall("signInWithPassword",{email,password:p,returnSecureToken:true})}
   catch(e){
@@ -773,8 +804,6 @@ async function doLoginProd(id,p){
   let d;
   try{
     d=await dbGet("users",j.localId);
-    if(!d&&email.endsWith("@"+DOM_C)){ /* account made but profile was never saved → repair it */
-      d={role:"customer",name:"عميل",phone:email.split("@")[0],addr:[],pts:0,since:Date.now()};await dbPut("users",j.localId,d)}
   }catch(e){S.auth=null;save();return toast(aErr(e))}
   const prof=profOf(j.localId,d);
   if(!prof){S.auth=null;save();return toast("الحساب ده مش مفعّل – كلّم إدارة الفرع")}
@@ -790,14 +819,64 @@ async function registerProd(){
   if(p.length<6)return toast("كلمة السر 6 حروف أو أرقام على الأقل");
   if(p!==p2)return toast("تأكيد كلمة السر مش زي كلمة السر");
   toast("⏳ جاري إنشاء الحساب…");
-  const email=idEmail(ph);
+  const eml=em.toLowerCase();
   try{
-    const j=await authCall("signUp",{email,password:p,returnSecureToken:true});setAuth(j);
-    const doc={role:"customer",name:n,phone:ph,addr:ad?[ad]:[],pts:50,since:Date.now()};if(em)doc.email=em;
-    await dbPut("users",j.localId,doc);
-    applyUser(j.localId,doc);loginMode="login";
-    startSession(profOf(j.localId,doc),false,email,p);setTimeout(()=>toast("🎉 أهلاً بيك! هدية 50 نقطة"),1300);
-  }catch(e){toast(e.message==="EMAIL_EXISTS"?"الرقم ده متسجل قبل كده – ادخل بيه من تسجيل الدخول":aErr(e))}
+    const[a,b]=await Promise.all([dbGet("logins",ph),eml?dbGet("logins",eml):null]);
+    if(a)return toast("رقم الموبايل ده متسجل قبل كده – ادخل بيه من تسجيل الدخول");
+    if(b)return toast("الإيميل ده متسجل قبل كده");
+  }catch(e){return toast(aErr(e))}
+  const email="c"+Date.now().toString(36)+Math.random().toString(36).slice(2,10)+"@"+DOM_C; /* hidden login id */
+  let j;
+  try{j=await authCall("signUp",{email,password:p,returnSecureToken:true});setAuth(j)}catch(e){return toast(aErr(e))}
+  const doc={role:"customer",name:n,phone:ph,addr:ad?[ad]:[],pts:50,since:Date.now()};if(eml)doc.email=eml;
+  try{await createCustomer(j.localId,doc,{e:email})}
+  catch(e){authCall("delete",{idToken:j.idToken}).catch(()=>{});S.auth=null;save();return toast(String(e.message).match(/PERMISSION|PRECONDITION|EXISTS/)?"رقم الموبايل أو الإيميل متسجل قبل كده":aErr(e))}
+  S.loginMap=S.loginMap||{};S.loginMap[ph]=email;if(eml)S.loginMap[eml]=email;
+  applyUser(j.localId,doc);loginMode="login";
+  startSession(profOf(j.localId,doc),false,email,p);setTimeout(()=>toast("🎉 أهلاً بيك! هدية 50 نقطة"),1300);
+}
+/* profile + login lookups in one all-or-nothing write (fails if the phone/email is taken) */
+function createCustomer(uid,doc,lk){
+  const w=[["users/"+uid,doc],["logins/"+doc.phone,Object.assign({uid},lk)]];
+  if(doc.email)w.push(["logins/"+doc.email,Object.assign({uid},lk)]);
+  return dbCommit(w);
+}
+/* ---------- Google sign-in (native Android account picker → Firebase signInWithIdp) ---------- */
+const canGoogle=()=>PROD&&!!CFG.googleClientId&&!!(window.BMNative&&window.BMNative.googleSignIn);
+function googleStart(){if(!canGoogle())return toast("الدخول بجوجل مش متاح على الجهاز ده");toast("⏳ جاري فتح حسابات جوجل…");try{window.BMNative.googleSignIn(CFG.googleClientId)}catch(e){toast("حصل خطأ في الدخول بجوجل")}}
+window.bmGoogle=async(tok,err)=>{
+  if(err){if(err!=="cancel")toast(err==="noaccount"?"مفيش حساب جوجل على الجهاز – ضيف حساب من الإعدادات":"الدخول بجوجل مكملش: "+err);return}
+  toast("⏳ جاري تسجيل الدخول…");
+  try{
+    const j=await authCall("signInWithIdp",{postBody:"id_token="+encodeURIComponent(tok)+"&providerId=google.com",requestUri:"http://localhost",returnSecureToken:true,returnIdpCredential:true});
+    setAuth(j);
+    const d=await dbGet("users",j.localId);
+    if(d){const prof=profOf(j.localId,d);if(!prof){S.auth=null;save();return toast("الحساب ده مش مفعّل")}applyUser(j.localId,d);return startSession(prof,false)}
+    googleProfile(j);
+  }catch(e){S.auth=null;save();toast(aErr(e))}
+};
+function googleProfile(j){
+  const gm=String(j.email||"").toLowerCase();
+  const s=sheet(`<h2>👋 أهلاً بيك</h2><p class="sm muted">خطوة واحدة كمان: محتاجين رقم موبايلك عشان التوصيل والتواصل معاك.</p><div class="col">
+   <div><label class="lbl">الاسم</label><input id="g_n" value="${esc(j.displayName||j.fullName||"")}"></div>
+   <div><label class="lbl">رقم الموبايل</label><input id="g_ph" class="ltr" style="text-align:right" inputmode="tel" placeholder="01xxxxxxxxx"></div>
+   <div><label class="lbl">العنوان (للتوصيل)</label><input id="g_ad" placeholder="المنطقة – الشارع – رقم العمارة والدور"></div>
+   <div class="xs muted ltr" style="text-align:right">${esc(gm)}</div>
+   <button class="btn pri blk" id="gok">إنشاء الحساب</button></div>`);
+  s.addEventListener("click",e=>{if(e.target===s&&!S.session){S.auth=null;save()}});
+  s.querySelector("#gok").onclick=async()=>{
+    const n=s.querySelector("#g_n").value.trim(),ph=s.querySelector("#g_ph").value.trim().replace(/\s/g,""),ad=s.querySelector("#g_ad").value.trim();
+    if(n.length<2)return toast("اكتب اسمك");if(!/^01[0125]\d{8}$/.test(ph))return toast("رقم الموبايل لازم يكون 11 رقم ويبدأ بـ 010 أو 011 أو 012 أو 015");
+    toast("⏳ جاري إنشاء الحساب…");
+    try{
+      const[a,b]=await Promise.all([dbGet("logins",ph),gm?dbGet("logins",gm):null]);
+      if(a)return toast("رقم الموبايل ده متسجل بحساب تاني – ادخل بيه بكلمة السر");
+      const doc={role:"customer",name:n,phone:ph,addr:ad?[ad]:[],pts:50,since:Date.now()};if(gm&&!b)doc.email=gm;
+      await createCustomer(j.localId,doc,{g:true});
+      S.loginMap=S.loginMap||{};S.loginMap[ph]="G";
+      applyUser(j.localId,doc);closeAll();startSession(profOf(j.localId,doc),false);setTimeout(()=>toast("🎉 أهلاً بيك! هدية 50 نقطة"),1300);
+    }catch(e){toast(String(e.message).match(/PERMISSION|PRECONDITION|EXISTS/)?"رقم الموبايل ده متسجل قبل كده":aErr(e))}
+  };
 }
 async function checkOwner(){try{const d=await dbGet("meta","owner");const was=OWNER_FREE;OWNER_FREE=!d;if(was!==OWNER_FREE&&!S.session)render()}catch(e){}}
 function ownerSetup(){
@@ -888,13 +967,15 @@ function loginView(){
    <div class="seg" style="margin-bottom:14px"><button class="${!reg?"on":""}" data-a="lmode" data-v="login">تسجيل الدخول</button><button class="${reg?"on":""}" data-a="lmode" data-v="reg">حساب جديد</button></div>
    <form id="lf" class="col" onsubmit="return false">
     ${reg?`<div><label class="lbl">الاسم</label><input id="l_name" placeholder="اسمك بالكامل"></div>`:""}
-    <div><label class="lbl">${reg?"رقم الموبايل":"رقم الموبايل أو اسم المستخدم"}</label><input id="l_user" class="ltr" style="text-align:right" inputmode="${reg?"tel":"text"}" placeholder="${reg?"01xxxxxxxxx":PROD?"01xxxxxxxxx":"01xxxxxxxxx / admin"}" autocomplete="off"></div>
-    ${reg&&PROD?`<div><label class="lbl">العنوان (للتوصيل)</label><input id="l_addr" placeholder="المنطقة – الشارع – رقم العمارة والدور"></div><div><label class="lbl">الإيميل (اختياري)</label><input id="l_email" class="ltr" style="text-align:right" inputmode="email" placeholder="name@example.com" autocomplete="off"></div>`:""}
+    <div><label class="lbl">${reg?"رقم الموبايل":PROD?"رقم الموبايل أو الإيميل":"رقم الموبايل أو اسم المستخدم"}</label><input id="l_user" class="ltr" style="text-align:right" inputmode="${reg?"tel":PROD?"email":"text"}" placeholder="${reg?"01xxxxxxxxx":PROD?"01xxxxxxxxx أو name@gmail.com":"01xxxxxxxxx / admin"}" autocomplete="off"></div>
+    ${reg&&PROD?`<div><label class="lbl">العنوان (للتوصيل)</label><input id="l_addr" placeholder="المنطقة – الشارع – رقم العمارة والدور"></div><div><label class="lbl">الإيميل (اختياري – تقدر تدخل بيه بدل الرقم)</label><input id="l_email" class="ltr" style="text-align:right" inputmode="email" placeholder="name@example.com" autocomplete="off"></div>`:""}
     <div><label class="lbl">كلمة السر</label><input id="l_pass" type="password" placeholder="${PROD?"6 حروف أو أرقام على الأقل":"••••"}"></div>
     ${reg&&PROD?`<div><label class="lbl">تأكيد كلمة السر</label><input id="l_pass2" type="password" placeholder="اكتبها تاني"></div>`:""}
     <button class="btn pri blk" data-a="${reg?"register":"login"}">${reg?"إنشاء الحساب":"دخول"}</button>
    </form>
-   ${reg?`<p class="xs muted" style="margin:10px 0 0">التسجيل هنا للعملاء فقط. حسابات الموظفين بيعملها المدير من لوحة التحكم.</p>`:PROD?`<p class="xs muted" style="margin:10px 0 0">الموظفين: ادخل باسم المستخدم اللي المدير عملهولك.</p>${OWNER_FREE?`<button class="btn gold blk" style="margin-top:10px" data-a="ownersetup">👑 إعداد حساب المالك (أول مرة بس)</button>`:""}`:`
+   ${canGoogle()?`<div class="row" style="margin:14px 0 10px;gap:10px"><span class="sp" style="height:1px;background:var(--line)"></span><span class="xs muted">أو</span><span class="sp" style="height:1px;background:var(--line)"></span></div>
+   <button class="btn blk" data-a="google" style="display:flex;align-items:center;justify-content:center;gap:10px;background:#fff;color:#1f1f1f;border:1px solid #dadce0;box-shadow:none"><svg width="20" height="20" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg><b>المتابعة بحساب جوجل</b></button>`:""}
+   ${reg?`<p class="xs muted" style="margin:10px 0 0">التسجيل هنا للعملاء فقط. حسابات الموظفين بيعملها المدير من لوحة التحكم.</p>`:PROD?`<p class="xs muted" style="margin:10px 0 0">الموظفين: ادخلوا باسم المستخدم اللي المدير عملهولكم.</p>${OWNER_FREE?`<button class="btn gold blk" style="margin-top:10px" data-a="ownersetup">👑 إعداد حساب المالك (أول مرة بس)</button>`:""}`:`
    <div class="demo"><div class="xs b muted">حسابات تجريبية للعرض (اضغط للدخول):</div>
     <button data-a="quick" data-v="admin">👑 <b>المالك / الأدمن</b><span class="sp"></span><span class="ltr muted xs">admin / 1234</span></button>
     <button data-a="quick" data-v="cashier">🧾 <b>كاشير</b><span class="sp"></span><span class="ltr muted xs">cashier / 1234</span></button>
@@ -1051,7 +1132,7 @@ function custProfile(){
    <div class="sec"><h2>عناويني</h2><a data-a="addaddr">+ إضافة</a></div>
    <div class="card list">${c.addr.map(a=>`<div class="li sm">📍 ${esc(a)}</div>`).join("")}</div>
    ${themeCard()}
-   <button class="btn red blk" style="margin-top:14px" data-a="logout">تسجيل الخروج</button></main>`;
+   ${verCard()}<button class="btn red blk" style="margin-top:14px" data-a="logout">تسجيل الخروج</button></main>`;
 }
 function themeCard(){return `<div class="card row" style="margin-top:14px"><span>🌙</span><b class="sp">الوضع الليلي</b><div class="seg" style="width:150px"><button class="${S.theme==="light"?"on":""}" data-a="theme" data-v="light">فاتح</button><button class="${S.theme==="dark"?"on":""}" data-a="theme" data-v="dark">داكن</button></div></div>`}
 
@@ -1281,7 +1362,7 @@ function aMore(){
   return aTop("المزيد")+`<main class="main"><div class="card row"><span class="av">${esc(s.name.replace("أ. ","")[0])}</span><div class="sp"><b>${esc(s.name)}</b><div class="sm muted">${ROLES[s.role]} • <span class="ltr">${s.u}</span></div></div></div>
   <div class="card list menu" style="margin-top:12px">${items.map(([k,i,n,d])=>`<button class="li" data-a="go" data-v="${k}"><span class="ico">${i}</span><div class="sp"><b>${n}</b>${d?`<div class="xs muted">${d}</div>`:""}</div><span>←</span></button>`).join("")}</div>
   ${themeCard()}
-  <button class="btn red blk" style="margin-top:14px" data-a="logout">تسجيل الخروج</button>
+  ${verCard()}<button class="btn red blk" style="margin-top:14px" data-a="logout">تسجيل الخروج</button>
   <p class="xs muted" style="text-align:center;margin-top:16px">B&amp;M Supermarket • نسخة العرض 1.0</p></main>`;
 }
 let rp=7;
@@ -1497,6 +1578,8 @@ const A={
   viewinv:v=>invDetail(v),
   newstaff:()=>newStaff(),
   ownersetup:()=>ownerSetup(),
+  google:()=>googleStart(),
+  chkupd:()=>checkUpdate(true),
   delstaff:v=>delStaff(v),
   wheel:()=>wheelSheet(),
   dbsync:()=>syncAccounts(true),
@@ -1527,6 +1610,7 @@ render=function(){_render();startCarousel();if(R.tab==="search")setTimeout(()=>{
 render();
 syncAccounts();
 if(PROD&&!S.session)checkOwner();
+setTimeout(()=>checkUpdate(false),4000);
 setInterval(()=>{if(PROD&&S.session&&!document.hidden&&navigator.onLine!==false)syncAccounts()},30000); /* new orders / status updates */
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)syncAccounts()});
 const _t0=Date.now();Promise.race([document.fonts&&document.fonts.ready||Promise.resolve(),new Promise(r=>setTimeout(r,2500))]).then(()=>setTimeout(()=>{const s=$("#splash");s.classList.add("done");s.style.opacity=0;s.style.transform="scale(1.08)";s.style.transition="opacity .45s,transform .45s";setTimeout(()=>s.remove(),450)},Math.max(0,1900-(Date.now()-_t0))));

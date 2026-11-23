@@ -5,6 +5,7 @@ rules_version = '2';
 //
 //   users/{uid}  profile + role of every account (customer, owner, manager, cashier, inventory, accountant)
 //   meta/owner   records who the owner is; once it exists nobody else can become owner
+//   logins/{key} phone or email → the hidden Firebase login behind it (keeps phone & email unique)
 //   orders/{id}  online orders; customers create/cancel their own, staff move them along
 //
 // Loyalty points (users.pts) can only be added by owner/manager/cashier (when an order is delivered).
@@ -13,6 +14,7 @@ service cloud.firestore {
 
     function signedIn() { return request.auth != null; }
     function userDoc(uid) { return /databases/$(database)/documents/users/$(uid); }
+    function loginDoc(key) { return /databases/$(database)/documents/logins/$(key); }
     function hasProfile() { return signedIn() && exists(userDoc(request.auth.uid)); }
     function myRole() { return get(userDoc(request.auth.uid)).data.role; }
     function isStaff() { return hasProfile() && myRole() in ['owner', 'manager', 'cashier', 'inventory', 'accountant']; }
@@ -37,14 +39,21 @@ service cloud.firestore {
       allow list: if isStaff();
 
       allow create: if signedIn() && okName(request.resource.data) && (
-        // 1) a customer registers himself (phone must match his login)
+        // 1) a customer registers himself; his phone (and email, if any) must be claimed
+        //    for him in logins/ in the same write, so nobody can take a used phone/email
         (request.auth.uid == uid
           && request.resource.data.keys().hasOnly(['role', 'name', 'phone', 'addr', 'pts', 'since', 'email'])
           && request.resource.data.role == 'customer'
           && request.resource.data.phone is string
-          && request.auth.token.email == request.resource.data.phone + '@customers.bm-market.app'
+          && request.resource.data.phone.matches('01[0125][0-9]{8}')
           && request.resource.data.get('pts', 0) is int
-          && request.resource.data.get('pts', 0) <= 50)
+          && request.resource.data.get('pts', 0) <= 50
+          && getAfter(loginDoc(request.resource.data.phone)).data.uid == uid
+          && (!('email' in request.resource.data)
+              || getAfter(loginDoc(request.resource.data.email)).data.uid == uid)
+          && (request.auth.token.firebase.sign_in_provider != 'google.com'
+              || !('email' in request.resource.data)
+              || request.resource.data.email == request.auth.token.email))
         // 2) the one-time owner setup (only while meta/owner does not exist yet)
         || (request.auth.uid == uid
           && request.resource.data.role == 'owner'
@@ -57,7 +66,7 @@ service cloud.firestore {
       allow update: if signedIn() && (
         // a customer edits his own profile (can't change role, phone or points)
         (request.auth.uid == uid && resource.data.role == 'customer'
-          && changed().hasOnly(['name', 'addr', 'email'])
+          && changed().hasOnly(['name', 'addr'])
           && okName(request.resource.data))
         // order staff add a customer's loyalty points when an order is delivered
         // (points only go up, at most 1100 at a time = a 10,000 EGP order + 100 wheel bonus)
@@ -72,6 +81,20 @@ service cloud.firestore {
       );
 
       allow delete: if isOwner() && resource.data.role != 'owner';
+    }
+
+    match /logins/{key} {
+      allow get: if true;   // needed before sign-in (phone/email → login)
+      allow list, update, delete: if false;
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['uid', 'e', 'g'])
+        && request.resource.data.uid == request.auth.uid
+        && getAfter(userDoc(request.auth.uid)).data.role == 'customer'
+        && (getAfter(userDoc(request.auth.uid)).data.phone == key
+            || getAfter(userDoc(request.auth.uid)).data.get('email', '') == key)
+        && ((request.resource.data.get('e', '') == request.auth.token.email && !('g' in request.resource.data))
+            || (request.resource.data.get('g', false) == true && !('e' in request.resource.data)
+                && request.auth.token.firebase.sign_in_provider == 'google.com'));
     }
 
     match /orders/{orderId} {
