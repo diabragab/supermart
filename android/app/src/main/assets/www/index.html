@@ -1071,7 +1071,7 @@ function delAcctSheet(){
         const j=await authCall("signInWithPassword",{email:idEmail(c.phone),password:p,returnSecureToken:true});setAuth(j);
         await dbDel("users",S.auth.uid);
         await authCall("delete",{idToken:S.auth.idToken});
-      }
+      }else if(DB.on){b.disabled=true;await dbDel("customers",c.phone)} /* older shared-Firestore demo mode */
       S.customers=S.customers.filter(x=>x!==c);S.orders=S.orders.filter(o=>o.phone!==c.phone);S.cart=[];
       if(S.creds)delete S.creds[idEmail(c.phone)];
       closeSheet();A.logout();toast("✓ اتمسح حسابك");
