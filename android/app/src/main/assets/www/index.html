@@ -649,7 +649,7 @@ const PROD=!!(CFG.projectId&&CFG.apiKey&&CFG.auth!==false);
 const DOM_C="customers.bm-market.app",DOM_S="staff.bm-market.app";
 const STAFF_ROLES=["owner","manager","cashier","inventory","accountant"];
 let memPw=null,OWNER_FREE=false;
-if(PROD&&S.acct!=="fb"){S.users=[];S.customers=[];S.session=null;S.auth=null;S.creds={};S.acct="fb";save()} /* drop demo accounts once */
+if(PROD&&S.acct!=="fb"){S.users=[];S.customers=[];S.orders=[];S.session=null;S.auth=null;S.creds={};S.acct="fb";save()} /* drop demo accounts once */
 if(PROD&&S.session&&S.session.offline&&!S.auth){S.session=null;save()} /* offline password is kept in memory only → after a restart sign in again (works offline too) */
 const idEmail=id=>{id=String(id||"").trim().toLowerCase().replace(/\s/g,"");if(id.includes("@"))return id;if(/^01\d{9}$/.test(id))return id+"@"+DOM_C;return id+"@"+DOM_S};
 const AERR={EMAIL_EXISTS:"الحساب ده متسجل قبل كده",EMAIL_NOT_FOUND:"الحساب ده مش موجود",INVALID_PASSWORD:"كلمة السر غلط",INVALID_LOGIN_CREDENTIALS:"رقم الموبايل/اسم المستخدم أو كلمة السر غلط",USER_DISABLED:"الحساب ده موقوف",TOO_MANY_ATTEMPTS_TRY_LATER:"محاولات كتير غلط – استنى شوية وجرّب تاني",WEAK_PASSWORD:"كلمة السر ضعيفة – 6 حروف على الأقل",INVALID_EMAIL:"اسم المستخدم مش صحيح",MISSING_PASSWORD:"اكتب كلمة السر",OPERATION_NOT_ALLOWED:"الدخول بكلمة السر مش مفعّل في Firebase (Authentication → Email/Password)",CONFIGURATION_NOT_FOUND:"Firebase Authentication مش متفعّل في المشروع",PERMISSION_DENIED:"مش مسموح بالعملية دي (راجع قواعد Firestore)",API_KEY_INVALID:"مفتاح Firebase (apiKey) غلط في config.js"};
@@ -667,11 +667,12 @@ async function token(){
   const j=await r.json().catch(()=>({}));
   if(!r.ok){if(r.status===400){S.auth=null;save()}throw new Error(j.error&&j.error.message||"HTTP "+r.status)}
   setAuth(j);return S.auth.idToken}
-async function dbCommit(writes){
-  const t=await token();const base=`projects/${CFG.projectId}/databases/(default)/documents`;
-  const r=await fetchT(`https://firestore.googleapis.com/v1/${base}:commit?key=${encodeURIComponent(CFG.apiKey)}`,{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+t},
-    body:JSON.stringify({writes:writes.map(([path,o])=>({update:Object.assign({name:base+"/"+path},toF(o)),currentDocument:{exists:false}}))})});
-  if(!r.ok)throw await fsErr(r)}
+const FS_BASE=()=>`projects/${CFG.projectId}/databases/(default)/documents`;
+async function fsPost(op,body){const t=await token();const r=await fetchT(`https://firestore.googleapis.com/v1/${FS_BASE()}:${op}?key=${encodeURIComponent(CFG.apiKey)}`,{method:"POST",headers:Object.assign({"Content-Type":"application/json"},t?{Authorization:"Bearer "+t}:{}),body:JSON.stringify(body)});if(!r.ok)throw await fsErr(r);return r.json()}
+const dbCommitRaw=writes=>fsPost("commit",{writes});
+/* create several docs at once (all or nothing), each only if it doesn't exist yet */
+const dbCommit=writes=>dbCommitRaw(writes.map(([path,o])=>({update:Object.assign({name:FS_BASE()+"/"+path},toF(o)),currentDocument:{exists:false}})));
+async function dbQuery(col,field,val){const j=await fsPost("runQuery",{structuredQuery:{from:[{collectionId:col}],where:{fieldFilter:{field:{fieldPath:field},op:"EQUAL",value:{stringValue:val}}}}});return j.filter(x=>x.document).map(x=>withId(x.document))}
 function profOf(uid,d){if(!d)return null;if(d.role==="customer")return{type:"cust",uid,phone:d.phone,name:d.name};if(STAFF_ROLES.includes(d.role))return{type:"staff",uid,u:d.u||"",name:d.name,role:d.role};return null}
 /* put a Firestore user doc into the local lists (customers / staff) */
 function applyUser(uid,d){
@@ -683,9 +684,39 @@ function applyUser(uid,d){
 async function pushDirtyProd(){
   for(const c of S.customers.filter(x=>x.dirty&&x.uid)){
     const mine=S.session&&S.session.uid===c.uid;
-    await dbPut("users",c.uid,mine?{name:c.name,addr:c.addr||[],pts:c.pts||0}:{pts:c.pts||0},true);delete c.dirty}
+    if(mine)await dbPut("users",c.uid,{name:c.name,addr:c.addr||[]},true);delete c.dirty}
   for(const u of S.users.filter(x=>x.dirty&&x.uid)){await dbPut("users",u.uid,{name:u.name,role:u.role},true);delete u.dirty}
 }
+/* ---------- ONLINE ORDERS (Firestore "orders") ----------
+   Customers create orders; staff see all orders and move them along.
+   Loyalty points are only added by staff, when an order is delivered. */
+const ordDoc=o=>({uid:o.uid,phone:o.phone,name:o.name,addr:o.addr||"",type:o.type,pay:o.pay,items:JSON.stringify(o.items),sub:o.sub,fee:o.fee||0,disc:o.disc||0,coupon:o.coupon||"",total:o.total,st:0,note:o.note||"",t:o.t,bonus:o.bonus||0});
+const ordFrom=d=>{let items=[];try{items=JSON.parse(d.items)}catch(e){}return Object.assign({},d,{id:d._id,items,coupon:d.coupon||null,ptsGiven:!!d.ptsGiven})};
+const ordPts=o=>Math.floor(o.total/10)+(o.bonus||0);
+async function pushOrdersProd(){
+  let lost=0;
+  for(const o of S.orders.filter(x=>x.pending||x.dirty)){
+    try{
+      if(o.pending){await dbPut("orders",o.id,ordDoc(o));delete o.pending}
+      if(o.dirty){
+        if(isStaff()&&o.st===3&&!o.ptsGiven&&o.uid){
+          await dbCommitRaw([{update:Object.assign({name:FS_BASE()+"/orders/"+o.id},toF({st:3,ptsGiven:true})),updateMask:{fieldPaths:["st","ptsGiven"]},currentDocument:{exists:true}},
+            {transform:{document:FS_BASE()+"/users/"+o.uid,fieldTransforms:[{fieldPath:"pts",increment:{integerValue:String(ordPts(o))}}]}}]);
+          o.ptsGiven=true;const c=S.customers.find(x=>x.uid===o.uid);if(c)c.pts+=ordPts(o);
+        }else await dbPut("orders",o.id,{st:o.st},true);
+        delete o.dirty}
+    }catch(e){if(isNet(e))throw e;delete o.pending;delete o.dirty;lost++} /* refused by the server → server copy wins */
+  }
+  if(lost)toast("⚠️ حالة الطلب اتغيرت من المحل – اتحدثت");
+}
+async function syncOrdersProd(){
+  await pushOrdersProd();
+  const docs=isStaff()?await dbList("orders"):await dbQuery("orders","uid",S.session.uid);
+  const local=S.orders.filter(o=>o.pending||o.dirty);
+  S.orders=docs.map(ordFrom).filter(o=>!local.some(l=>l.id===o.id)).concat(local).sort((a,b)=>a.t-b.t);
+}
+async function pushOrdersNow(){if(!PROD||!S.auth)return;try{await pushOrdersProd()}catch(e){}save();render()}
+const newOrderId=()=>"BM-"+Date.now().toString(36).slice(-5).toUpperCase()+Math.floor(Math.random()*36*36).toString(36).toUpperCase().padStart(2,"0");
 function forceLogout(msg){S.session=null;S.auth=null;memPw=null;guest=false;R={tab:"login"};hist.length=0;closeAll();save();render();if(msg)toast(msg)}
 async function syncProd(manual){
   if(!S.session){DB.status="local";return}
@@ -703,11 +734,12 @@ async function syncProd(manual){
       const docs=await dbList("users");const seen=new Set(docs.map(d=>d._id));
       docs.forEach(d=>applyUser(d._id,d));
       S.customers=S.customers.filter(c=>c.dirty||(c.uid&&seen.has(c.uid)));S.users=S.users.filter(u=>seen.has(u.uid));
-      if(manual)toast(`🔄 اتزامن: ${S.customers.length} عميل • ${S.users.length} موظف`);
+      await syncOrdersProd();
+      if(manual)toast(`🔄 اتزامن: ${S.customers.length} عميل • ${S.users.length} موظف • ${S.orders.length} طلب`);
     }else{
       const d=await dbGet("users",S.session.uid);
       if(!d){DB.busy=false;return forceLogout("الحساب ده مش موجود")}
-      applyUser(S.session.uid,d);if(manual)toast("🔄 اتزامن");
+      applyUser(S.session.uid,d);await syncOrdersProd();if(manual)toast("🔄 اتزامن");
     }
     delete S.session.offline;DB.status="online";DB.last=Date.now();
   }catch(e){
@@ -716,14 +748,14 @@ async function syncProd(manual){
     if(manual)toast(isNet(e)?"📴 مش قادر يوصل للسيرفر – شغال على الموبايل":aErr(e));
   }
   DB.busy=false;save();
-  if(S.session&&["customers","staff","settings","profile","more"].includes(R.tab))render();
+  if(S.session&&["customers","staff","settings","profile","more","orders","order","dash","home"].includes(R.tab)&&!$("#ovs").children.length)render();
 }
 function startSession(prof,offline,email,p){
   const after=R.after;
   if(email&&p){S.creds=S.creds||{};S.creds[email]={h:credHash(email,p),prof}}
   S.session=Object.assign({},prof,offline?{offline:true}:{});
   if(prof.type==="staff")R={tab:prof.role==="cashier"?"pos":"dash"};
-  else{const c=me();if(c&&S.pendingPts){c.pts+=S.pendingPts;S.pendingPts=0;markDirty(c)}R={tab:after||"home"}}
+  else{if(S.pendingPts){S.pendingBonus=Math.min(100,(S.pendingBonus||0)+S.pendingPts);S.pendingPts=0}R={tab:after||"home"}}
   hist.length=0;guest=false;closeAll();render();
   toast((offline?"📴 دخول بدون إنترنت – ":"")+`أهلاً ${String(prof.name||"").split(" ")[0]} 👋`);
   if(!offline)syncAccounts();
@@ -987,9 +1019,10 @@ function checkoutSheet(){
     const short=S.cart.find(l=>l.q>prod(l.id).st);if(short){const p=prod(short.id);return toast(`⚠️ المتاح من ${p.n}: ${qty(p,p.st)} بس – عدّل السلة`)}
     const items=S.cart.map(l=>{const p=prod(l.id);return{id:p.id,n:p.n,e:p.e,q:l.q,p:price(p)}});
     const T=cartTotals(type==="delivery"),sub=T.sub,fee=T.fee;
-    const o={id:"BM-"+(++S.ordNo),t:Date.now(),phone:c.phone,name:c.name,addr:type==="delivery"?c.addr[addr]:"استلام من الفرع",type,pay,items,sub,fee,disc:T.disc,coupon:S.coupon?S.coupon.l:null,total:T.total,st:0,note:s.querySelector("#note").value};
-    S.orders.push(o);S.cart=[];S.coupon=null;c.pts+=Math.floor(o.total/10);markDirty(c);closeAll();hist.length=0;R={tab:"orders"};render();
-    confetti();const d=sheet(`<div class="empty" style="padding:20px 0"><div style="animation:pop .6s cubic-bezier(.2,.8,.3,1.5)">🎉</div><h2>تم استلام طلبك!</h2><p class="muted">رقم الطلب <b class="ltr">${o.id}</b><br>هنكلمك قريب لتأكيد الطلب.<br>كسبت <b>${Math.floor(o.total/10)}</b> نقطة 🎁</p><button class="btn pri blk" data-a="vieworder" data-v="${o.id}">تابع الطلب</button></div>`);
+    const o={id:PROD?newOrderId():"BM-"+(++S.ordNo),t:Date.now(),phone:c.phone,name:c.name,addr:type==="delivery"?c.addr[addr]:"استلام من الفرع",type,pay,items,sub,fee,disc:T.disc,coupon:S.coupon?S.coupon.l:null,total:T.total,st:0,note:s.querySelector("#note").value};
+    if(PROD){o.uid=c.uid;o.bonus=Math.min(100,S.pendingBonus||0);S.pendingBonus=0;o.pending=true}
+    S.orders.push(o);S.cart=[];S.coupon=null;if(PROD)pushOrdersNow();else{c.pts+=Math.floor(o.total/10);markDirty(c)}closeAll();hist.length=0;R={tab:"orders"};render();
+    confetti();const d=sheet(`<div class="empty" style="padding:20px 0"><div style="animation:pop .6s cubic-bezier(.2,.8,.3,1.5)">🎉</div><h2>تم استلام طلبك!</h2><p class="muted">رقم الطلب <b class="ltr">${o.id}</b><br>هنكلمك قريب لتأكيد الطلب.<br>${PROD?`هتكسب <b>${ordPts(o)}</b> نقطة 🎁 أول ما الطلب يوصلك`:`كسبت <b>${Math.floor(o.total/10)}</b> نقطة 🎁`}</p><button class="btn pri blk" data-a="vieworder" data-v="${o.id}">تابع الطلب</button></div>`);
   };
 }
 function custOrders(){
@@ -1200,7 +1233,8 @@ function orderNext(id){
   if(o.st===0&&short){const p=prod(short.id);return toast(`⚠️ المخزون مش كفاية: ${p.n} (المتاح ${qty(p,p.st)})`)}
   o.st++;
   if(o.st===3){o.items.forEach(i=>{const p=prod(i.id);if(p)p.st=r2(Math.max(0,p.st-i.q))});S.sales.push({id:++S.invNo,t:Date.now(),items:o.items.map(i=>Object.assign({cost:(prod(i.id)||{}).cost},i)),sub:o.total,disc:0,total:o.total,pay:o.pay,cashier:"طلب أونلاين "+o.id,synced:true,ret:false,online:o.id})}
-  toast(`${o.id}: ${o.type==="pickup"&&o.st===2?"جاهز للاستلام":ST[o.st]}`);render();
+  if(PROD){o.dirty=true;pushOrdersNow()}
+  toast(`${o.id}: ${o.type==="pickup"&&o.st===2?"جاهز للاستلام":ST[o.st]}${PROD&&o.st===3&&o.uid?` • +${ordPts(o)} نقطة للعميل`:""}`);render();
 }
 
 /* ---- Inventory ---- */
@@ -1401,6 +1435,7 @@ function wheelSheet(){
       const p=PRIZES[k];S.lastSpin=dayKey();
       let msg="";
       if(p.t==="none"){msg=`<div class="prize" style="color:var(--muted)">حظ أوفر المرة الجاية 🙏</div><div class="sm muted">ارجع بكرة ولف تاني!</div>`}
+      else if(p.t==="pts"&&PROD){S.pendingBonus=Math.min(100,(S.pendingBonus||0)+p.v);msg=`<div class="prize">🎁 +${p.v} نقطة!</div><div class="sm muted">هتتضاف لحسابك مع طلبك الجاي لما يوصلك</div>`;confetti()}
       else if(p.t==="pts"){const c=me();if(c){c.pts+=p.v;markDirty(c)}else S.pendingPts=(S.pendingPts||0)+p.v;msg=`<div class="prize">🎁 +${p.v} نقطة!</div><div class="sm muted">${c?"اتضافت لحسابك":"هتتضاف لحسابك أول ما تسجّل دخول"}</div>`;confetti()}
       else{S.coupon={l:p.l,t:p.t,v:p.v,min:p.min};msg=`<div class="prize">🎉 ${p.l}!</div><div class="sm muted">${p.t==="amt"?`على الطلبات فوق ${p.min} ج.م • `:""}هيتطبق أوتوماتيك في السلة</div>`;confetti()}
       vib();save();s.querySelector("#wres").innerHTML=msg;b.disabled=false;b.className="btn pri blk";b.textContent=p.t==="none"?"تمام":"تسوّق دلوقتي 🛒";b.onclick=()=>{closeSheet();render()};
@@ -1429,7 +1464,7 @@ const A={
   clearcart:()=>{S.cart=[];render()},
   checkout:()=>checkoutSheet(),
   vieworder:v=>{closeAll();go("order",{x:v,root:"orders"})},
-  custcancel:v=>{const o=S.orders.find(x=>x.id===v);if(o.st!==0)return toast("الطلب بدأ تجهيزه ومينفعش يتلغي");o.st=-1;render();toast("تم إلغاء الطلب")},
+  custcancel:v=>{const o=S.orders.find(x=>x.id===v);if(o.st!==0)return toast("الطلب بدأ تجهيزه ومينفعش يتلغي");o.st=-1;if(PROD){o.dirty=true;pushOrdersNow()}render();toast("تم إلغاء الطلب")},
   reorder:v=>{const o=S.orders.find(x=>x.id===v);o.items.forEach(i=>{const l=S.cart.find(x=>x.id===i.id);if(l)l.q+=i.q;else S.cart.push({id:i.id,q:i.q})});tabTo("cart");toast("✓ المنتجات اتضافت للسلة")},
   qs:v=>{$("#q").value=v;searchResults(v)},
   addaddr:()=>{const s=sheet(`<h2>عنوان جديد</h2><input id="na" placeholder="المنطقة – الشارع – رقم العمارة – الدور"><button class="btn pri blk" style="margin-top:12px" id="naok">حفظ</button>`);s.querySelector("#naok").onclick=()=>{const v=s.querySelector("#na").value.trim();if(!v)return;me().addr.push(v);markDirty(me());closeSheet();render()}},
@@ -1452,7 +1487,7 @@ const A={
   net:()=>{S.online=!S.online;if(S.online&&S.queue.length){const n=S.queue.length;S.sales.forEach(s=>s.synced=true);S.queue=[];toast(`🔄 اتزامنت ${n} فاتورة مع السيرفر`)}else toast(S.online?"🟢 رجع الاتصال":"📴 النت فصل – الكاشير شغال عادي أوفلاين");render()},
   ofilter:v=>{oFilter=v;render()},
   onext:v=>{if(!can("orders"))return toast("🔒 مش مسموح لصلاحيتك");orderNext(v)},
-  ocancel:v=>{if(!can("orders"))return toast("🔒 مش مسموح لصلاحيتك");S.orders.find(x=>x.id===v).st=-1;render();toast("تم رفض الطلب")},
+  ocancel:v=>{if(!can("orders"))return toast("🔒 مش مسموح لصلاحيتك");const o=S.orders.find(x=>x.id===v);o.st=-1;if(PROD){o.dirty=true;pushOrdersNow()}render();toast("تم رفض الطلب")},
   invf:v=>{invF=v;render()},
   editp:v=>editProd(+v),
   newprod:()=>{if(!can("inv"))return toast("🔒 مش مسموح لصلاحيتك");editProd(0)},
@@ -1492,6 +1527,7 @@ render=function(){_render();startCarousel();if(R.tab==="search")setTimeout(()=>{
 render();
 syncAccounts();
 if(PROD&&!S.session)checkOwner();
+setInterval(()=>{if(PROD&&S.session&&!document.hidden&&navigator.onLine!==false)syncAccounts()},30000); /* new orders / status updates */
 document.addEventListener("visibilitychange",()=>{if(!document.hidden)syncAccounts()});
 const _t0=Date.now();Promise.race([document.fonts&&document.fonts.ready||Promise.resolve(),new Promise(r=>setTimeout(r,2500))]).then(()=>setTimeout(()=>{const s=$("#splash");s.classList.add("done");s.style.opacity=0;s.style.transform="scale(1.08)";s.style.transition="opacity .45s,transform .45s";setTimeout(()=>s.remove(),450)},Math.max(0,1900-(Date.now()-_t0))));
 </script>

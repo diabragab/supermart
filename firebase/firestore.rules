@@ -5,6 +5,9 @@ rules_version = '2';
 //
 //   users/{uid}  profile + role of every account (customer, owner, manager, cashier, inventory, accountant)
 //   meta/owner   records who the owner is; once it exists nobody else can become owner
+//   orders/{id}  online orders; customers create/cancel their own, staff move them along
+//
+// Loyalty points (users.pts) can only be changed by staff (added when an order is delivered).
 service cloud.firestore {
   match /databases/{database}/documents {
 
@@ -50,12 +53,13 @@ service cloud.firestore {
       );
 
       allow update: if signedIn() && (
-        // a customer edits his own profile (can't change role or phone)
+        // a customer edits his own profile (can't change role, phone or points)
         (request.auth.uid == uid && resource.data.role == 'customer'
-          && changed().hasOnly(['name', 'addr', 'pts', 'email'])
+          && changed().hasOnly(['name', 'addr', 'email'])
           && okName(request.resource.data))
         // any employee can update a customer's loyalty points
-        || (isStaff() && resource.data.role == 'customer' && changed().hasOnly(['pts']))
+        || (isStaff() && resource.data.role == 'customer' && changed().hasOnly(['pts'])
+          && request.resource.data.pts is int && request.resource.data.pts >= 0)
         // the owner edits his own profile (stays owner)
         || (isOwner() && request.auth.uid == uid && !changed().hasAny(['role']))
         // the owner edits employees (can't turn anyone into owner)
@@ -63,6 +67,35 @@ service cloud.firestore {
       );
 
       allow delete: if isOwner() && resource.data.role != 'owner';
+    }
+
+    match /orders/{orderId} {
+      function myProfile() { return get(userDoc(request.auth.uid)).data; }
+      allow get: if signedIn() && (resource.data.uid == request.auth.uid || isStaff());
+      allow list: if signedIn() && (resource.data.uid == request.auth.uid || isStaff());
+
+      // a customer places an order for himself
+      allow create: if hasProfile() && myProfile().role == 'customer'
+        && request.resource.data.keys().hasOnly(['uid', 'phone', 'name', 'addr', 'type', 'pay', 'items', 'sub', 'fee', 'disc', 'coupon', 'total', 'st', 'note', 't', 'bonus'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.phone == myProfile().phone
+        && request.resource.data.st == 0
+        && request.resource.data.items is string && request.resource.data.items.size() < 20000
+        && request.resource.data.total is number && request.resource.data.total >= 0
+        && request.resource.data.bonus is int && request.resource.data.bonus >= 0 && request.resource.data.bonus <= 100;
+
+      allow update: if signedIn() && (
+        // the customer cancels his own order while it is still new
+        (resource.data.uid == request.auth.uid && resource.data.st == 0
+          && request.resource.data.st == -1 && changed().hasOnly(['st']))
+        // staff move the order along / reject it; points are marked as given once, on delivery
+        || (isStaff() && changed().hasOnly(['st', 'ptsGiven'])
+          && request.resource.data.st in [-1, 0, 1, 2, 3]
+          && (!changed().hasAny(['ptsGiven'])
+              || (request.resource.data.ptsGiven == true && request.resource.data.st == 3
+                  && resource.data.get('ptsGiven', false) == false)))
+      );
+      allow delete: if false;
     }
 
     // everything else is closed until it is moved online
