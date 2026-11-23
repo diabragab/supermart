@@ -6,7 +6,10 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.View;
 import android.view.Window;
+import android.view.WindowInsets;
+import android.widget.FrameLayout;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -48,7 +51,24 @@ public class MainActivity extends Activity {
                 return false;
             }
         });
-        setContentView(web);
+        // Android 15+ draws apps edge-to-edge: keep the page out from under the status bar,
+        // navigation bar and keyboard by padding a brand-coloured container with the insets.
+        FrameLayout root = new FrameLayout(this);
+        root.setBackgroundColor(Color.parseColor("#089468"));
+        root.addView(web, new FrameLayout.LayoutParams(-1, -1));
+        root.setOnApplyWindowInsetsListener((v, ins) -> {
+            int l, t, r, b;
+            if (android.os.Build.VERSION.SDK_INT >= 30) {
+                android.graphics.Insets i = ins.getInsets(WindowInsets.Type.systemBars() | WindowInsets.Type.displayCutout() | WindowInsets.Type.ime());
+                l = i.left; t = i.top; r = i.right; b = i.bottom;
+            } else {
+                l = ins.getSystemWindowInsetLeft(); t = ins.getSystemWindowInsetTop();
+                r = ins.getSystemWindowInsetRight(); b = ins.getSystemWindowInsetBottom();
+            }
+            if (android.os.Build.VERSION.SDK_INT >= 35) v.setPadding(l, t, r, b);
+            return ins;
+        });
+        setContentView(root);
         if (savedInstanceState != null) web.restoreState(savedInstanceState);
         else web.loadUrl("file:///android_asset/www/index.html");
     }

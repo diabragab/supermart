@@ -71,7 +71,9 @@ service cloud.firestore {
         || (isOwner() && resource.data.role in employeeRoles() && request.resource.data.role in employeeRoles())
       );
 
-      allow delete: if isOwner() && resource.data.role != 'owner';
+      allow delete: if (isOwner() && resource.data.role != 'owner')
+        // a customer deletes his own account (Google Play account-deletion requirement)
+        || (signedIn() && request.auth.uid == uid && resource.data.role == 'customer');
     }
 
     match /orders/{orderId} {
