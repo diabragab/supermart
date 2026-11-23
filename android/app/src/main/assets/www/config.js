@@ -1,4 +1,6 @@
-/* B&M demo – online accounts database (Firebase Firestore).
-   Fill projectId and apiKey from Firebase console → Project settings → General → Web app.
-   Leave empty to keep accounts on the device only. */
-window.BM_FIREBASE = { projectId: "bm-demo1", apiKey: "AIzaSyA6Rj_b8L-eO_g5jHwkMLMx9IP6mdjO1eg" };
+/* B&M – Firebase (production).
+   Fill projectId and apiKey from Firebase console → Project settings → General → Your apps → Web app.
+   With both filled: real sign-up / login (Firebase Authentication) and accounts in Firestore "users".
+   Leave them empty to run the offline demo (demo accounts admin / cashier / store, password 1234). */
+window.BM_FIREBASE = { projectId: "bm-markett", apiKey: "AIzaSyD0hnZ15tFehDA0SWnjdc975jT9gn_sDMc",
+  googleClientId: "240920035101-rb80k4vdtforgeo8qdj011a401r4gkkk.apps.googleusercontent.com" };

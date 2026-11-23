@@ -28,8 +28,17 @@ Locally (needs Android SDK 34): `cd android && gradle assembleRelease`.
 
 The UI is a single offline HTML/JS app at `android/app/src/main/assets/www/index.html` loaded in a native WebView (`MainActivity.java`).
 
-### Online accounts (Firebase Firestore)
+### Production accounts (Firebase Authentication + Firestore)
 
-Customer and staff accounts can sync through a free Firebase Firestore database so they work across phones.
-Put the project's `projectId` and web `apiKey` in `android/app/src/main/assets/www/config.js`. With it empty, accounts stay on the device.
-Passwords are stored as SHA-256 hashes. The database must be in Firestore *test mode* (demo only; test-mode rules expire after 30 days).
+With `projectId` and `apiKey` set in `android/app/src/main/assets/www/config.js` the app runs in production mode:
+
+- Customers register with name, mobile number, address, optional email and password; they log in with mobile + password.
+- Staff log in with a username created by the owner (المزيد → الموظفين). The first owner is created once from the login screen ("إعداد حساب المالك").
+- Under the hood every account is a Firebase Email/Password user (`<phone>@customers.bm-market.app` / `<username>@staff.bm-market.app`), so it works on the free Spark plan. Profile and role live in Firestore `users/{uid}`; `meta/owner` locks the owner role.
+- Online orders in Firestore `orders/{id}` (items as a JSON string). Customers create and cancel (while new) their own orders; staff list all orders and move them along; the app polls every 30 s.
+- Loyalty points: only staff change `users.pts`. On delivery the staff device commits `st=3, ptsGiven=true` plus a `pts` increment of `floor(total/10) + bonus` (wheel prize, max 100) in one batch.
+- Security rules: `firebase/firestore.rules` (role-based; all other collections closed).
+- Staff who logged in online once can log in offline on the same phone; the app re-authenticates when the internet returns.
+- Step-by-step console setup in Arabic: `firebase/SETUP-ar.md`.
+
+With `config.js` empty the app runs the old offline demo (demo accounts, data on the device only).
