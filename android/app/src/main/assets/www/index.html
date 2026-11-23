@@ -16,7 +16,7 @@
   --shadow:0 18px 40px -12px rgba(8,40,28,.22);--sh1:0 1px 2px rgba(8,40,28,.05),0 6px 18px -6px rgba(8,40,28,.10);
   --r:20px;
   --f:'Readex','Cairo','Noto Sans Arabic','Segoe UI',Tahoma,system-ui,sans-serif;
-  --c-veg:#e7f7e9;--c-dairy:#fff6dc;--c-bakery:#fdeedd;--c-meat:#fde7e4;--c-grocery:#eef1ff;--c-drinks:#e3f4fb;--c-snacks:#f6e9fb;--c-clean:#e6f7f5;
+  --c-veg:#e7f7e9;--c-dairy:#fff6dc;--c-bakery:#fdeedd;--c-meat:#fde7e4;--c-grocery:#eef1ff;--c-drinks:#e3f4fb;--c-snacks:#f6e9fb;--c-clean:#e6f7f5;--c-frozen:#e6eeff;--c-water:#dff3ff;--c-nuts:#fbefdc;--c-personal:#fde8f1;--c-tobacco:#eeeeee;
 }
 :root[data-theme="dark"]{
   --bg:#0b1210;--surface:#141d19;--sunk:#1b2621;--fg:#e8f1ec;--muted:#93a69c;--line:#24322b;
@@ -24,7 +24,7 @@
   --gold:#ffb020;--gold-ink:#2a1a00;--gold-soft:#3a2c10;
   --sale:#ff6b5e;--sale-soft:#3a1d1a;--warn:#f2a93b;--warn-soft:#3a2c12;--info:#7aa2ff;--info-soft:#1b2745;
   --shadow:0 18px 40px -12px rgba(0,0,0,.7);--sh1:0 1px 2px rgba(0,0,0,.3),0 6px 18px -6px rgba(0,0,0,.5);
-  --c-veg:#17291c;--c-dairy:#2b2614;--c-bakery:#2d2116;--c-meat:#2e1a18;--c-grocery:#1b1f33;--c-drinks:#14262e;--c-snacks:#271a2e;--c-clean:#132a27;
+  --c-veg:#17291c;--c-dairy:#2b2614;--c-bakery:#2d2116;--c-meat:#2e1a18;--c-grocery:#1b1f33;--c-drinks:#14262e;--c-snacks:#271a2e;--c-clean:#132a27;--c-frozen:#172133;--c-water:#12262f;--c-nuts:#2b2214;--c-personal:#2e1a25;--c-tobacco:#252525;
   color-scheme:dark}
 @font-face{font-family:'Readex';font-style:normal;font-display:swap;font-weight:160 700;src:url(fonts/readex-ar.woff2) format('woff2');unicode-range:U+0600-06FF,U+0750-077F,U+08A0-08FF,U+200C-200E,U+2010-2011,U+FB50-FDFF,U+FE70-FEFC}
 @font-face{font-family:'Readex';font-style:normal;font-display:swap;font-weight:160 700;src:url(fonts/readex-lat.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02C6,U+02DA,U+02DC,U+2000-206F,U+20AC,U+2122,U+2212}
@@ -243,7 +243,7 @@ h1,h2,h3{margin:0}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 @media (min-width:760px){
   .main{max-width:1100px;margin:0 auto;width:100%}
-  .cats{grid-template-columns:repeat(8,1fr)}
+  .cats{grid-template-columns:repeat(6,1fr)}
   .grid2.k4{grid-template-columns:repeat(4,1fr)}
 }
 /* ===================== B&M v2 – modern theme ===================== */
@@ -342,6 +342,11 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent);background:va
 .pc .off{top:14px;right:14px;background:linear-gradient(135deg,var(--hot),var(--hot2));border-radius:99px;padding:1px 8px;font-weight:700;font-size:11px;box-shadow:0 6px 12px -6px rgba(255,90,40,.9)}
 .hscroll{gap:12px;padding:2px 16px 10px}
 .hscroll .pc{width:156px}
+.pi{display:block;width:1.2em;height:1.2em;object-fit:contain;background:#fff;border-radius:.16em;padding:.06em;box-sizing:border-box;margin:auto}
+.pc .im .pi{width:112px;height:112px;border-radius:17px;padding:0}
+.ico .pi{width:40px;height:40px;border-radius:10px}
+.tile .e .pi{width:50px;height:50px;border-radius:10px}
+.pimg .pi{width:170px;height:170px;border-radius:22px}
 .pimg{height:200px;border-radius:26px;background:var(--c,var(--surface));display:grid;place-items:center;font-size:110px;text-shadow:0 18px 24px rgba(0,0,0,.18)}
 .step{border:0;background:var(--sunk);border-radius:14px}
 .step button{color:var(--accent)}
@@ -449,7 +454,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent);background:va
 <script>
 "use strict";
 /* ================= DATA ================= */
-const CATS=[["veg","خضار وفاكهة","🥬"],["dairy","ألبان وبيض","🧀"],["bakery","مخبوزات","🥖"],["meat","لحوم ودواجن","🍗"],["grocery","بقالة","🍚"],["drinks","مشروبات","🥤"],["snacks","حلويات وسناكس","🍫"],["clean","منظفات","🧼"]];
+const CATS=[["veg","خضار وفاكهة","🥬"],["dairy","ألبان وبيض","🧀"],["bakery","مخبوزات","🥖"],["meat","لحوم ودواجن","🍗"],["grocery","بقالة","🍚"],["drinks","مشروبات","🥤"],["snacks","حلويات وسناكس","🍫"],["clean","منظفات","🧼"],["frozen","مجمدات","🧊"],["water","مياه","💧"],["nuts","لب ومكسرات","🥜"],["personal","عناية شخصية","🧴"],["tobacco","سجاير ومعسل","🚬"]];
 const SEED_P=[
  [1001, "BM1001", "لبن جهينة كامل الدسم 1 لتر", "dairy", 48, 41.25, "🥛", 60],
  [1002, "BM1002", "لبن جهينة خالي الدسم 1 لتر", "dairy", 48, 41.25, "🥛", 30],
@@ -495,9 +500,9 @@ const SEED_P=[
  [1042, "PLU-1042", "أوراك فراخ", "meat", 120, 98.5, "🍗", 15, 1],
  [1043, "PLU-1043", "لحم بقري كندوز", "meat", 450, 369.0, "🥩", 10, 1],
  [1044, "PLU-1044", "لحم مفروم", "meat", 430, 352.5, "🥩", 10, 1],
- [1045, "BM1045", "بانيه أطياب مجمد 1 كجم", "meat", 290, 249.5, "🍗", 10],
- [1046, "BM1046", "برجر حلواني 8 قطع", "meat", 160, 137.5, "🍔", 12],
- [1047, "BM1047", "سجق كوكي 400 جم", "meat", 120, 103.25, "🌭", 10],
+ [1045, "BM1045", "بانيه أطياب مجمد 1 كجم", "frozen", 290, 249.5, "🍗", 10],
+ [1046, "BM1046", "برجر حلواني 8 قطع", "frozen", 160, 137.5, "🍔", 12],
+ [1047, "BM1047", "سجق كوكي 400 جم", "frozen", 120, 103.25, "🌭", 10],
  [1048, "PLU-1048", "سمك بلطي", "meat", 95, 78.0, "🐟", 12, 1],
  [1049, "BM1049", "تونة صن شاين 140 جم", "meat", 55, 47.25, "🐟", 40],
  [1050, "BM1050", "أرز الضحى مصري 1 كجم", "grocery", 38, 32.75, "🍚", 100],
@@ -527,8 +532,8 @@ const SEED_P=[
  [1074, "BM1074", "كوكاكولا 1 لتر", "drinks", 25, 21.5, "🥤", 80],
  [1075, "BM1075", "سفن أب 1 لتر", "drinks", 25, 21.5, "🥤", 40],
  [1076, "BM1076", "بيبسي كانز 330 مل", "drinks", 17, 14.5, "🥫", 60],
- [1077, "BM1077", "مياه نستله 1.5 لتر", "drinks", 9, 7.75, "💧", 150],
- [1078, "BM1078", "مياه أكوافينا 600 مل", "drinks", 6, 5.25, "💧", 150],
+ [1077, "BM1077", "مياه نستله 1.5 لتر", "water", 9, 7.75, "💧", 150],
+ [1078, "BM1078", "مياه أكوافينا 600 مل", "water", 6, 5.25, "💧", 150],
  [1079, "BM1079", "عصير جهينة بيور مانجو 1 لتر", "drinks", 50, 43.0, "🧃", 30],
  [1080, "BM1080", "عصير بيتي جوافة 235 مل", "drinks", 12, 10.25, "🧃", 80],
  [1081, "BM1081", "عصير جهينة كلاسيك برتقال 235 مل", "drinks", 11, 9.5, "🧃", 80],
@@ -557,18 +562,189 @@ const SEED_P=[
  [1104, "BM1104", "ديتول مطهر 500 مل", "clean", 95, 81.75, "🧴", 15],
  [1105, "BM1105", "مناديل فاين 10 بكرات تواليت", "clean", 120, 103.25, "🧻", 20],
  [1106, "BM1106", "مناديل زينة سحب 550 منديل", "clean", 35, 30.0, "🧻", 40],
- [1107, "BM1107", "صابون لوكس 4 قطع", "clean", 75, 64.5, "🧼", 20],
- [1108, "BM1108", "شامبو صانسيلك 400 مل", "clean", 110, 94.5, "🧴", 12],
- [1109, "BM1109", "معجون أسنان سيجنال 100 مل", "clean", 45, 38.75, "🪥", 25],
- [1110, "BM1110", "بامبرز مقاس 4 (44 حفاضة)", "clean", 420, 361.25, "👶", 8]
+ [1107, "BM1107", "صابون لوكس 4 قطع", "personal", 75, 64.5, "🧼", 20],
+ [1108, "BM1108", "شامبو صانسيلك 400 مل", "personal", 110, 94.5, "🧴", 12],
+ [1109, "BM1109", "معجون أسنان سيجنال 100 مل", "personal", 45, 38.75, "🪥", 25],
+ [1110, "BM1110", "بامبرز مقاس 4 (44 حفاضة)", "personal", 420, 361.25, "👶", 8],
+ [1111, "BM1111", "شيبسي جبنة عائلي", "snacks", 20, 17.25, "🥔", 24],
+ [1112, "BM1112", "شيبسي كباب عائلي", "snacks", 20, 17.25, "🥔", 18],
+ [1113, "BM1113", "شيبسي خل وملح عائلي", "snacks", 20, 17.25, "🥔", 30],
+ [1114, "BM1114", "شيبسي شطة وليمون جامبو", "snacks", 10, 8.5, "🥔", 60],
+ [1115, "BM1115", "شيبسي ملح جامبو", "snacks", 10, 8.5, "🥔", 12],
+ [1116, "BM1116", "شيبسي جبنة جامبو", "snacks", 10, 8.5, "🥔", 12],
+ [1117, "BM1117", "شيبسي طماطم عائلي", "snacks", 20, 17.25, "🥔", 40],
+ [1118, "BM1118", "شيبسي موجة جبنة شيدر", "snacks", 15, 13.0, "🥔", 12],
+ [1119, "BM1119", "شيبسي موجة فلفل حار", "snacks", 15, 13.0, "🥔", 24],
+ [1120, "BM1120", "شيبسي بلاك بيبر بالليمون", "snacks", 20, 17.25, "🥔", 40],
+ [1121, "BM1121", "دوريتوس سويت شيلي", "snacks", 15, 13.0, "🌮", 12],
+ [1122, "BM1122", "دوريتوس نار", "snacks", 15, 13.0, "🌮", 40],
+ [1123, "BM1123", "شيتوس جبنة", "snacks", 10, 8.5, "🧀", 18],
+ [1124, "BM1124", "شيتوس فلفل حار", "snacks", 10, 8.5, "🧀", 12],
+ [1125, "BM1125", "تايجر شيبس شطة", "snacks", 5, 4.25, "🥔", 12],
+ [1126, "BM1126", "بيك رولز بيتزا", "snacks", 10, 8.5, "🥨", 30],
+ [1127, "BM1127", "بيك رولز جبنة", "snacks", 10, 8.5, "🥨", 30],
+ [1128, "BM1128", "بيك ستيكس ملح", "snacks", 5, 4.25, "🥨", 12],
+ [1129, "BM1129", "فشار بالزبدة ميكروويف", "snacks", 20, 17.25, "🍿", 18],
+ [1130, "BM1130", "صن بايتس جبنة وأعشاب", "snacks", 15, 13.0, "🥖", 12],
+ [1131, "BM1131", "هوهوز شوكولاتة", "snacks", 10, 8.5, "🧁", 40],
+ [1132, "BM1132", "تودو شوكولاتة", "snacks", 10, 8.5, "🧁", 30],
+ [1133, "BM1133", "مولتو ماجنم شوكولاتة", "snacks", 20, 17.25, "🥐", 12],
+ [1134, "BM1134", "مولتو كلاسيك فراولة", "snacks", 10, 8.5, "🥐", 40],
+ [1135, "BM1135", "فريسكا ويفر شوكولاتة", "snacks", 5, 4.25, "🍫", 12],
+ [1136, "BM1136", "بسكويت لوكس بالسمسم", "snacks", 5, 4.25, "🍪", 18],
+ [1137, "BM1137", "بسكويت بيتي بور بسكو مصر", "snacks", 10, 8.5, "🍪", 60],
+ [1138, "BM1138", "بسكويت شمعدان", "snacks", 5, 4.25, "🍪", 60],
+ [1139, "BM1139", "دايجستف ماكفيتيز", "snacks", 45, 38.75, "🍪", 40],
+ [1140, "BM1140", "مارس 51 جم", "snacks", 30, 25.75, "🍫", 12],
+ [1141, "BM1141", "سنيكرز 50 جم", "snacks", 30, 25.75, "🍫", 40],
+ [1142, "BM1142", "تويكس", "snacks", 30, 25.75, "🍫", 40],
+ [1143, "BM1143", "بونبون مستكة", "snacks", 5, 4.25, "🍬", 30],
+ [1144, "BM1144", "علكة تريدنت نعناع", "snacks", 15, 13.0, "🍬", 12],
+ [1145, "BM1145", "لب أبيض محمص 250 جم", "nuts", 85, 73.0, "🌻", 18],
+ [1146, "BM1146", "لب أسمر محمص 250 جم", "nuts", 75, 64.5, "🍉", 12],
+ [1147, "BM1147", "لب سوبر محمص 250 جم", "nuts", 90, 77.5, "🌻", 40],
+ [1148, "BM1148", "لب سوري أبو عوف 200 جم", "nuts", 75, 64.5, "🌻", 18],
+ [1149, "BM1149", "لب سوداني (عين جمل) محمص 250 جم", "nuts", 80, 68.75, "🥜", 24],
+ [1150, "BM1150", "فول سوداني بقشره محمص 500 جم", "nuts", 75, 64.5, "🥜", 30],
+ [1151, "BM1151", "فول سوداني مقشر مملح 250 جم", "nuts", 70, 60.25, "🥜", 18],
+ [1152, "BM1152", "فول سوداني بالشطة 150 جم", "nuts", 35, 30.0, "🌶️", 40],
+ [1153, "BM1153", "سوداني مقرمش بالجبنة الرحمن", "nuts", 10, 8.5, "🥜", 12],
+ [1154, "BM1154", "حمص الشام محمص 250 جم", "nuts", 60, 51.5, "🫘", 40],
+ [1155, "BM1155", "ترمس 500 جم", "nuts", 30, 25.75, "🫘", 24],
+ [1156, "BM1156", "مكسرات مشكلة أبو عوف 200 جم", "nuts", 180, 154.75, "🥜", 40],
+ [1157, "BM1157", "كاجو محمص أبو عوف 200 جم", "nuts", 260, 223.5, "🥜", 60],
+ [1158, "BM1158", "لوز محمص 200 جم", "nuts", 240, 206.5, "🌰", 18],
+ [1159, "BM1159", "فستق حلبي 200 جم", "nuts", 320, 275.25, "🌰", 12],
+ [1160, "BM1160", "بندق 200 جم", "nuts", 250, 215.0, "🌰", 40],
+ [1161, "BM1161", "زبيب 250 جم", "nuts", 80, 68.75, "🍇", 40],
+ [1162, "BM1162", "مياه بركة 1.5 لتر", "water", 9, 7.75, "💧", 60],
+ [1163, "BM1163", "مياه بركة 600 مل", "water", 6, 5.25, "💧", 18],
+ [1164, "BM1164", "مياه صافي 1.5 لتر", "water", 9, 7.75, "💧", 24],
+ [1165, "BM1165", "مياه دساني 1.5 لتر", "water", 9, 7.75, "💧", 12],
+ [1166, "BM1166", "مياه حياة 1.5 لتر", "water", 9, 7.75, "💧", 40],
+ [1167, "BM1167", "مياه سيوة 1.5 لتر", "water", 10, 8.5, "💧", 60],
+ [1168, "BM1168", "مياه أكوافينا 1.5 لتر", "water", 9, 7.75, "💧", 12],
+ [1169, "BM1169", "مياه نستله 600 مل", "water", 6, 5.25, "💧", 40],
+ [1170, "BM1170", "مياه نستله 6 لتر", "water", 35, 30.0, "💧", 12],
+ [1171, "BM1171", "مياه نستله كرتونة 12 × 600 مل", "water", 70, 60.25, "📦", 40],
+ [1172, "BM1172", "سبيرو سباتس صودا 1 لتر", "water", 15, 13.0, "🫧", 18],
+ [1173, "BM1173", "مياه فوارة بيرييه 330 مل", "water", 45, 38.75, "🫧", 30],
+ [1174, "BM1174", "عسل إيمتنان برسيم 450 جم", "grocery", 140, 120.5, "🍯", 60],
+ [1175, "BM1175", "عسل إيمتنان موالح 450 جم", "grocery", 160, 137.5, "🍯", 40],
+ [1176, "BM1176", "عسل إيزيس نحل 500 جم", "grocery", 150, 129.0, "🍯", 30],
+ [1177, "BM1177", "عسل نحل الأقصى 1 كجم", "grocery", 260, 223.5, "🍯", 24],
+ [1178, "BM1178", "عسل أسود 700 جم", "grocery", 55, 47.25, "🍯", 30],
+ [1179, "BM1179", "مربى فيتراك مشمش 450 جم", "grocery", 48, 41.25, "🍑", 40],
+ [1180, "BM1180", "مربى ملكة تين 450 جم", "grocery", 45, 38.75, "🍓", 30],
+ [1181, "BM1181", "حلاوة الرشيدي الميزان سادة 250 جم", "grocery", 50, 43.0, "🥜", 24],
+ [1182, "BM1182", "طحينة الرشيدي الميزان 300 جم", "grocery", 65, 56.0, "🥜", 24],
+ [1183, "BM1183", "بسطرمة حلواني 125 جم", "frozen", 110, 94.5, "🥩", 18],
+ [1184, "BM1184", "لانشون حلواني 250 جم", "frozen", 55, 47.25, "🥓", 18],
+ [1185, "BM1185", "لبن لمار كامل الدسم 1 لتر", "dairy", 47, 40.5, "🥛", 60],
+ [1186, "BM1186", "جبنة عبور لاند بيضاء 500 جم", "dairy", 48, 41.25, "🧀", 18],
+ [1187, "BM1187", "جبنة عبور لاند إسطنبولي 500 جم", "dairy", 55, 47.25, "🧀", 12],
+ [1188, "BM1188", "جبنة باندا مثلثات 8 قطع", "dairy", 45, 38.75, "🧀", 40],
+ [1189, "BM1189", "جبنة قريش 250 جم", "dairy", 30, 25.75, "🧀", 24],
+ [1190, "BM1190", "زبادي جهينة يونانية", "dairy", 20, 17.25, "🥣", 40],
+ [1191, "BM1191", "ميلك شيك جهينة هوهوز شوكولاتة", "dairy", 20, 17.25, "🥛", 30],
+ [1192, "BM1192", "ميرندا برتقال 1 لتر", "drinks", 25, 21.5, "🥤", 24],
+ [1193, "BM1193", "سبرايت 1 لتر", "drinks", 25, 21.5, "🥤", 60],
+ [1194, "BM1194", "شويبس جولد 1 لتر", "drinks", 25, 21.5, "🥤", 30],
+ [1195, "BM1195", "بيبسي 2.5 لتر", "drinks", 45, 38.75, "🥤", 24],
+ [1196, "BM1196", "عصير فراجللو مانجو 1 لتر", "drinks", 45, 38.75, "🧃", 40],
+ [1197, "BM1197", "عصير بيتي مانجو 1 لتر", "drinks", 45, 38.75, "🧃", 12],
+ [1198, "BM1198", "عصير جهينة كلاسيك جوافة 1 لتر", "drinks", 45, 38.75, "🧃", 12],
+ [1199, "BM1199", "عصير لمار تفاح 1 لتر", "drinks", 45, 38.75, "🧃", 40],
+ [1200, "BM1200", "فيروز تفاح 330 مل", "drinks", 20, 17.25, "🍏", 30],
+ [1201, "BM1201", "بربيكان رمان 330 مل", "drinks", 22, 19.0, "🍹", 18],
+ [1202, "BM1202", "مونستر 500 مل", "drinks", 65, 56.0, "⚡", 24],
+ [1203, "BM1203", "V7 مشروب طاقة", "drinks", 20, 17.25, "⚡", 18],
+ [1204, "BM1204", "شاي ليبتون مثلج خوخ", "drinks", 20, 17.25, "🍑", 30],
+ [1205, "BM1205", "مكرونة الملكة اسباجتي 1 كجم", "grocery", 50, 43.0, "🍝", 30],
+ [1206, "BM1206", "شعرية الملكة 350 جم", "grocery", 18, 15.5, "🍜", 12],
+ [1207, "BM1207", "أرز سنبلة 1 كجم", "grocery", 38, 32.75, "🍚", 60],
+ [1208, "BM1208", "زيت عافية عباد الشمس 1.6 لتر", "grocery", 195, 167.75, "🫗", 12],
+ [1209, "BM1209", "زيت زيتون إيطالي 500 مل", "grocery", 260, 223.5, "🫒", 40],
+ [1210, "BM1210", "سمن البوادي 1.5 كجم", "grocery", 270, 232.25, "🧈", 40],
+ [1211, "BM1211", "شاي ليبتون ناعم 250 جم", "grocery", 95, 81.75, "☕", 24],
+ [1212, "BM1212", "شاي الكبوس 250 جم", "grocery", 85, 73.0, "☕", 24],
+ [1213, "BM1213", "نسكافيه 3 في 1 (علبة 24 ظرف)", "grocery", 190, 163.5, "☕", 60],
+ [1214, "BM1214", "بن أبو عوف تركي محوج 200 جم", "grocery", 160, 137.5, "☕", 24],
+ [1215, "BM1215", "كاكاو ريتش بيك 150 جم", "grocery", 65, 56.0, "🍫", 40],
+ [1216, "BM1216", "تونة دولفين قطع 140 جم", "grocery", 45, 38.75, "🐟", 30],
+ [1217, "BM1217", "فول مدمس هاينز 400 جم", "grocery", 22, 19.0, "🫘", 40],
+ [1218, "BM1218", "صلصة الملكة 350 جم", "grocery", 22, 19.0, "🥫", 30],
+ [1219, "BM1219", "كاتشب هاينز 340 جم", "grocery", 45, 38.75, "🍅", 12],
+ [1220, "BM1220", "مايونيز هاينز 310 مل", "grocery", 60, 51.5, "🥫", 12],
+ [1221, "BM1221", "مرقة دجاج ماجي (8 مكعبات)", "grocery", 25, 21.5, "🍲", 24],
+ [1222, "BM1222", "إندومي دجاج", "grocery", 12, 10.25, "🍜", 30],
+ [1223, "BM1223", "كورن فليكس كيلوجز 375 جم", "grocery", 120, 103.25, "🥣", 60],
+ [1224, "BM1224", "شوفان كويكر 500 جم", "grocery", 95, 81.75, "🥣", 60],
+ [1225, "BM1225", "بيكنج باودر 10 جم", "grocery", 5, 4.25, "🌾", 12],
+ [1226, "BM1226", "فانيليا 5 جم", "grocery", 3, 2.5, "🌾", 12],
+ [1227, "BM1227", "بطاطس فارم فريتس 1 كجم", "frozen", 90, 77.5, "🍟", 60],
+ [1228, "BM1228", "بسلة مجمدة 400 جم", "frozen", 35, 30.0, "🟢", 60],
+ [1229, "BM1229", "خضار مشكل مجمد 400 جم", "frozen", 35, 30.0, "🥕", 24],
+ [1230, "BM1230", "ملوخية مجمدة 400 جم", "frozen", 30, 25.75, "🌿", 60],
+ [1231, "BM1231", "بامية مجمدة 400 جم", "frozen", 40, 34.5, "🌿", 40],
+ [1232, "BM1232", "كفتة حلواني 8 قطع", "frozen", 150, 129.0, "🍢", 60],
+ [1233, "BM1233", "آيس كريم نستله دولتشي 1 لتر", "frozen", 95, 81.75, "🍨", 30],
+ [1234, "BM1234", "شاور جيل لوكس 500 مل", "personal", 120, 103.25, "🧴", 24],
+ [1235, "BM1235", "شامبو هيد آند شولدرز 400 مل", "personal", 150, 129.0, "🧴", 60],
+ [1236, "BM1236", "صابون ديتول", "personal", 25, 21.5, "🧼", 30],
+ [1237, "BM1237", "مزيل عرق ريكسونا", "personal", 110, 94.5, "🧴", 60],
+ [1238, "BM1238", "معجون أسنان كلوز أب", "personal", 45, 38.75, "🪥", 24],
+ [1239, "BM1239", "فرشاة أسنان أورال بي", "personal", 45, 38.75, "🪥", 12],
+ [1240, "BM1240", "شفرات جيليت بلو 2 (5 قطع)", "personal", 90, 77.5, "🪒", 30],
+ [1241, "BM1241", "فوط صحية أولويز", "personal", 65, 56.0, "🌸", 24],
+ [1242, "BM1242", "بامبرز مقاس 3 (52 حفاضة)", "personal", 420, 361.25, "👶", 18],
+ [1243, "BM1243", "مولفيكس مقاس 4 (44 حفاضة)", "personal", 360, 309.5, "👶", 40],
+ [1244, "BM1244", "مناديل مبللة فاين بيبي", "personal", 45, 38.75, "👶", 12],
+ [1245, "BM1245", "أومو أوتوماتيك 2.5 كجم", "clean", 230, 197.75, "🧺", 30],
+ [1246, "BM1246", "برسيل جل 1 لتر", "clean", 120, 103.25, "🧺", 12],
+ [1247, "BM1247", "فيبا أطباق 1 لتر", "clean", 50, 43.0, "🧴", 18],
+ [1248, "BM1248", "مطهر ديتول 1 لتر", "clean", 170, 146.25, "🧴", 24],
+ [1249, "BM1249", "ملمع زجاج", "clean", 45, 38.75, "🧴", 18],
+ [1250, "BM1250", "مناديل مطبخ فاين 2 رول", "clean", 45, 38.75, "🧻", 60],
+ [1251, "BM1251", "أكياس زبالة 50 كيس", "clean", 35, 30.0, "🗑️", 18],
+ [1252, "BM1252", "سلك مواعين 3 قطع", "clean", 20, 17.25, "🧽", 30],
+ [1253, "BM1253", "راحة مبيد حشرات", "clean", 95, 81.75, "🪳", 30],
+ [1254, "BM1254", "كليوباترا بوكس", "tobacco", 100, 86.0, "🚬", 30],
+ [1255, "BM1255", "كليوباترا سوبر كينج", "tobacco", 105, 90.25, "🚬", 12],
+ [1256, "BM1256", "كليوباترا كوين", "tobacco", 100, 86.0, "🚬", 18],
+ [1257, "BM1257", "مارلبورو أحمر", "tobacco", 140, 120.5, "🚬", 30],
+ [1258, "BM1258", "مارلبورو جولد", "tobacco", 140, 120.5, "🚬", 30],
+ [1259, "BM1259", "إل إم أحمر", "tobacco", 105, 90.25, "🚬", 40],
+ [1260, "BM1260", "إل إم أزرق", "tobacco", 105, 90.25, "🚬", 24],
+ [1261, "BM1261", "ميريت", "tobacco", 140, 120.5, "🚬", 18],
+ [1262, "BM1262", "روثمانز", "tobacco", 105, 90.25, "🚬", 30],
+ [1263, "BM1263", "وينستون", "tobacco", 105, 90.25, "🚬", 40],
+ [1264, "BM1264", "كامل", "tobacco", 125, 107.5, "🚬", 24],
+ [1265, "BM1265", "دافيدوف", "tobacco", 135, 116.0, "🚬", 60],
+ [1266, "BM1266", "معسل نخلة تفاحتين 50 جم", "tobacco", 35, 30.0, "💨", 30],
+ [1267, "BM1267", "معسل نخلة نعناع 50 جم", "tobacco", 35, 30.0, "💨", 24],
+ [1268, "BM1268", "معسل نخلة عنب 50 جم", "tobacco", 35, 30.0, "💨", 60],
+ [1269, "BM1269", "معسل نخلة بطيخ 50 جم", "tobacco", 35, 30.0, "💨", 30],
+ [1270, "BM1270", "معسل نخلة فراولة 50 جم", "tobacco", 35, 30.0, "💨", 18],
+ [1271, "BM1271", "معسل زغلول 50 جم", "tobacco", 30, 25.75, "💨", 18],
+ [1272, "BM1272", "معسل الفاخر تفاحتين 50 جم", "tobacco", 75, 64.5, "💨", 12],
+ [1273, "BM1273", "معسل الفاخر نعناع 50 جم", "tobacco", 75, 64.5, "💨", 18],
+ [1274, "BM1274", "معسل الفاخر عنب ونعناع 50 جم", "tobacco", 75, 64.5, "💨", 18],
+ [1275, "BM1275", "معسل مزايا لبان ونعناع 50 جم", "tobacco", 60, 51.5, "💨", 18],
+ [1276, "BM1276", "معسل مزايا تفاحتين 50 جم", "tobacco", 60, 51.5, "💨", 60],
+ [1277, "BM1277", "فحم شيشة 1 كجم", "tobacco", 60, 51.5, "⚫", 18],
+ [1278, "BM1278", "ولاعة", "tobacco", 10, 8.5, "🔥", 12]
 ];
 const OFFERS={1003:44,1008:48,1027:35,1041:240,1055:92,1079:45,1092:18,1098:229};
 const ST=["جديد","جاري التجهيز","في الطريق","تم التسليم"];
 const ST_ICON=["🆕","👨‍🍳","🛵","✅"];
 const ROLES={owner:"المالك",manager:"مدير الفرع",cashier:"كاشير",inventory:"مسؤول مخزن",accountant:"محاسب"};
 
+/* product photos bundled in img/p/<id>.webp (see img/p/CREDITS.txt); others show their emoji */
+const IMG=new Set([1001,1005,1006,1007,1008,1009,1010,1011,1012,1013,1014,1015,1016,1017,1018,1019,1020,1021,1022,1025,1031,1034,1035,1036,1037,1038,1040,1042,1044,1045,1046,1047,1048,1049,1051,1053,1054,1055,1056,1057,1058,1059,1060,1061,1062,1063,1064,1065,1066,1067,1069,1070,1071,1072,1073,1074,1075,1076,1077,1080,1081,1082,1084,1085,1086,1087,1089,1090,1091,1092,1093,1094,1095,1096,1097,1098,1099,1100,1101,1102,1103,1104,1105,1106,1107,1108,1109,1112,1113,1118,1121,1122,1123,1124,1125,1128,1129,1130,1131,1133,1134,1135,1137,1139,1140,1141,1142,1143,1144,1145,1146,1147,1148,1149,1150,1152,1154,1155,1156,1157,1158,1160,1161,1162,1166,1167,1171,1173,1174,1175,1176,1177,1178,1179,1180,1181,1182,1183,1184,1185,1186,1187,1188,1189,1190,1191,1192,1193,1194,1198,1199,1200,1201,1202,1203,1204,1205,1206,1208,1209,1210,1211,1212,1214,1215,1218,1219,1220,1221,1222,1223,1224,1225,1226,1227,1228,1229,1230,1231,1233,1234,1236,1237,1239,1241,1245,1246,1249,1250,1251,1252,1257,1258,1260,1263,1277,1278]);
+function pic(p){if(!p)return"";return IMG.has(p.id)?`<img class="pi" src="img/p/${p.id}.webp" alt="" loading="lazy" decoding="async">`:p.e}
 function rng(s){return()=>{s=(s*1664525+1013904223)%4294967296;return s/4294967296}}
-const CATALOG_V=2; /* bump when SEED_P changes so installed apps get the new catalog */
+const CATALOG_V=3; /* bump when SEED_P changes so installed apps get the new catalog */
 function seedProducts(){return SEED_P.map(a=>({id:a[0],bc:a[1],n:a[2],c:a[3],p:a[4],cost:a[5],e:a[6],st:a[7],kg:!!a[8],offer:OFFERS[a[0]]||null,min:5}))}
 function seed(){
   const r=rng(42),now=Date.now(),day=864e5;
@@ -1092,7 +1268,7 @@ function custShell(){
 }
 function pcard(p){
   const off=p.offer?Math.round((1-p.offer/p.p)*100):0;
-  return `<div class="pc" data-a="prod" data-v="${p.id}" style="--c:var(--c-${p.c})">${off?`<span class="off">-${off}%</span>`:""}<div class="im">${p.e}</div><b>${esc(p.n)}</b>
+  return `<div class="pc" data-a="prod" data-v="${p.id}" style="--c:var(--c-${p.c})">${off?`<span class="off">-${off}%</span>`:""}<div class="im">${pic(p)}</div><b>${esc(p.n)}</b>
   <div class="pr"><strong>${fmt(price(p))}</strong>${p.offer?`<s>${fmt0(p.p)}</s>`:""}</div><div class="xs muted">${p.kg?"للكيلو":"للقطعة"}${p.st<=0?' • <span style="color:var(--sale)">نفد</span>':""}</div>
   ${p.st>0?`<button class="add" data-a="addcart" data-v="${p.id}">+</button>`:""}</div>`;
 }
@@ -1113,7 +1289,7 @@ function custHome(){
    ${S.coupon?`<div class="coupon" style="margin-top:10px"><span style="font-size:24px">🎟️</span><div class="sp sm"><b>عندك كوبون: ${esc(S.coupon.l)}</b><div class="xs muted">هيتطبق أوتوماتيك في السلة • صالح النهارده</div></div></div>`:""}
    <div class="card row" style="margin-top:10px;padding:10px 14px"><span style="font-size:22px">🛵</span><div class="sp sm"><b>توصيل مجاني</b> للطلبات فوق 300 ج.م • التوصيل خلال 45 دقيقة</div></div>
    <div class="sec"><h2>الأقسام</h2><a data-a="tab" data-v="cats">الكل</a></div>
-   <div class="cats anim">${CATS.map(([k,n,e])=>`<button class="cat" data-a="go" data-v="cat" data-x="${k}" style="--c:var(--c-${k})"><span>${e}</span>${n}</button>`).join("")}</div>
+   <div class="cats anim">${(CATS.length>12?CATS.slice(0,11):CATS).map(([k,n,e])=>`<button class="cat" data-a="go" data-v="cat" data-x="${k}" style="--c:var(--c-${k})"><span>${e}</span>${n}</button>`).join("")}${CATS.length>12?`<button class="cat" data-a="tab" data-v="cats" style="--c:var(--sunk)"><span>🗂️</span>كل الأقسام</button>`:""}</div>
    <div class="sec"><h2>عروض اليوم</h2><a data-a="go" data-v="cat" data-x="offers">عرض الكل</a></div>
    <div class="hscroll anim">${offers.map(pcard).join("")}</div>
    <div class="sec"><h2>الأكثر مبيعاً</h2></div>
@@ -1139,7 +1315,7 @@ function searchResults(q){
 }
 function prodSheet(id){
   const p=prod(id);let q=p.kg?1:1;
-  const s=sheet(`<div class="pimg" style="--c:var(--c-${p.c})">${p.e}</div>
+  const s=sheet(`<div class="pimg" style="--c:var(--c-${p.c})">${pic(p)}</div>
    <h2 style="margin-top:14px">${esc(p.n)}</h2>
    <div class="row"><b style="font-size:24px;color:var(--accent)">${fmt(price(p))}</b>${p.offer?`<s class="muted">${fmt(p.p)}</s><span class="tag t-red">وفّر ${fmt(p.p-p.offer)}</span>`:""}<span class="sp"></span><span class="xs muted">${p.kg?"سعر الكيلو":"سعر القطعة"}</span></div>
    <div class="sm muted" style="margin:8px 0 14px">${CATS.find(c=>c[0]===p.c)[1]} • ${p.st>0?(p.st<=p.min?`<span style="color:var(--warn)">باقي كمية قليلة</span>`:"متوفر"):`<span style="color:var(--sale)">غير متوفر حالياً</span>`}</div>
@@ -1157,7 +1333,7 @@ function custCart(){
   if(!S.cart.length)return topbar("السلة")+`<main class="main"><div class="empty"><div>🛒</div><b>السلة فاضية</b><p>ابدأ التسوق وضيف منتجاتك</p><button class="btn pri" data-a="tab" data-v="home">تسوق دلوقتي</button></div></main>`;
   const sub=cartSub(),fee=sub>=300?0:15;
   return topbar(`السلة (${cartCount()})`,{right:`<button class="ib" data-a="clearcart">${ic("trash")}</button>`})+`<main class="main">
-   <div class="card list">${S.cart.map((l,i)=>{const p=prod(l.id);return `<div class="li"><span class="ico">${p.e}</span><div class="sp" style="min-width:0"><b class="sm">${esc(p.n)}</b><div class="xs muted">${fmt(price(p))} ${p.kg?"/ كجم":""}</div><b style="color:var(--accent)">${fmt(price(p)*l.q)}</b></div><div class="step"><button data-a="cq" data-v="${i}" data-x="1">+</button><b class="sm">${qty(p,l.q)}</b><button data-a="cq" data-v="${i}" data-x="-1">−</button></div></div>`}).join("")}</div>
+   <div class="card list">${S.cart.map((l,i)=>{const p=prod(l.id);return `<div class="li"><span class="ico">${pic(p)}</span><div class="sp" style="min-width:0"><b class="sm">${esc(p.n)}</b><div class="xs muted">${fmt(price(p))} ${p.kg?"/ كجم":""}</div><b style="color:var(--accent)">${fmt(price(p)*l.q)}</b></div><div class="step"><button data-a="cq" data-v="${i}" data-x="1">+</button><b class="sm">${qty(p,l.q)}</b><button data-a="cq" data-v="${i}" data-x="-1">−</button></div></div>`}).join("")}</div>
    ${sub<300?`<div class="card sm" style="margin-top:10px;background:var(--gold-soft);border-color:transparent">🛵 ضيف بـ <b>${fmt(300-sub)}</b> كمان وخد التوصيل مجاناً</div>`:`<div class="card sm" style="margin-top:10px;background:var(--soft);border-color:transparent">🎉 طلبك له توصيل مجاني</div>`}
    ${S.coupon?`<div class="coupon" style="margin-top:10px"><span style="font-size:24px">🎟️</span><div class="sp sm"><b>كوبون العجلة: ${esc(S.coupon.l)}</b><div class="xs muted">اتطبق على طلبك</div></div></div>`:spunToday()?"":`<button class="coupon" style="margin-top:10px;width:100%;text-align:start" data-a="wheel"><span style="font-size:24px">🎡</span><div class="sp sm"><b>لف العجلة واكسب خصم على الطلب ده!</b></div><span class="link">لف ←</span></button>`}
    <div class="card" style="margin-top:10px">${totalsHTML(cartTotals(true))}</div>
@@ -1201,7 +1377,7 @@ function custOrder(){
   return topbar(`طلب ${o.id}`)+`<main class="main"><div class="card">${o.st<0?`<div class="empty" style="padding:10px"><div>❌</div><b>الطلب ده اتلغى</b></div>`:`<div class="track">${steps.map((s,i)=>`<div class="s ${i<o.st||o.st===3?"done":i===o.st?"cur":""}"><span class="c">${i<o.st||o.st===3?"✓":i+1}</span><div><b>${s}</b>${i===o.st&&o.st<3?`<div class="xs muted">الحالة الحالية</div>`:""}</div></div>`).join("")}</div>`}
    ${o.st===2&&o.type==="delivery"?`<div class="card row" style="background:var(--info-soft);border-color:transparent"><span style="font-size:26px">🛵</span><div class="sp sm"><b>المندوب: إسلام محمود</b><div class="ltr" style="text-align:right">0101 234 5678</div></div><a class="btn sm pri" href="tel:01012345678">اتصال</a></div>`:""}</div>
    <div class="card" style="margin-top:10px"><div class="sm muted b">${o.type==="delivery"?"📍 "+esc(o.addr):"🏪 استلام من فرع B&M"}</div><div class="sm muted">${o.pay==="cash"?"💵 كاش عند الاستلام":"💳 فيزا عند الاستلام"} • ${dt(o.t)} ${tm(o.t)}</div></div>
-   <div class="card list" style="margin-top:10px">${o.items.map(i=>`<div class="li"><span class="ico">${i.e}</span><div class="sp sm"><b>${esc(i.n)}</b><div class="muted xs">${qty(prod(i.id),i.q)} × ${fmt(i.p)}</div></div><b class="sm">${fmt(i.p*i.q)}</b></div>`).join("")}
+   <div class="card list" style="margin-top:10px">${o.items.map(i=>`<div class="li"><span class="ico">${pic(prod(i.id))||i.e}</span><div class="sp sm"><b>${esc(i.n)}</b><div class="muted xs">${qty(prod(i.id),i.q)} × ${fmt(i.p)}</div></div><b class="sm">${fmt(i.p*i.q)}</b></div>`).join("")}
    <div style="padding-top:8px"><div class="tot sm"><span>المجموع</span><b>${fmt(o.sub)}</b></div><div class="tot sm"><span>التوصيل</span><b>${o.fee?fmt(o.fee):"مجاني"}</b></div>${o.disc?`<div class="tot sm" style="color:var(--sale)"><span>🎡 خصم العجلة</span><b>- ${fmt(o.disc)}</b></div>`:""}<div class="tot big"><span>الإجمالي</span><span>${fmt(o.total)}</span></div></div></div>
    ${o.st===0?`<button class="btn red blk" style="margin-top:12px" data-a="custcancel" data-v="${o.id}">إلغاء الطلب</button>`:""}
    <button class="btn blk" style="margin-top:10px" data-a="reorder" data-v="${o.id}">🔁 اطلب نفس الطلب تاني</button></main>`;
@@ -1215,7 +1391,7 @@ function custProfile(){
    <div class="sec"><h2>عناويني</h2><a data-a="addaddr">+ إضافة</a></div>
    <div class="card list">${c.addr.map(a=>`<div class="li sm">📍 ${esc(a)}</div>`).join("")}</div>
    ${themeCard()}
-   ${verCard()}<button class="btn red blk" style="margin-top:14px" data-a="logout">تسجيل الخروج</button></main>`;
+   ${verCard()}<button class="btn red blk" style="margin-top:14px" data-a="logout">تسجيل الخروج</button><a class="xs muted" style="display:block;text-align:center;margin-top:12px" href="img/p/CREDITS.txt">مصادر صور المنتجات</a></main>`;
 }
 function themeCard(){return `<div class="card row" style="margin-top:14px"><span>🌙</span><b class="sp">الوضع الليلي</b><div class="seg" style="width:150px"><button class="${S.theme==="light"?"on":""}" data-a="theme" data-v="light">فاتح</button><button class="${S.theme==="dark"?"on":""}" data-a="theme" data-v="dark">داكن</button></div></div>`}
 
@@ -1258,7 +1434,7 @@ function aDash(){
    <div class="card" style="margin-top:12px"><div class="row"><b>مبيعات آخر 7 أيام</b><span class="sp"></span><a class="link" data-a="go" data-v="reports">التقارير ←</a></div>
     <div class="bars">${days.map(x=>`<div class="bc"><small class="num">${fmt0(x.v/1000*10)/10}k</small><div class="bar ${x.d===0?"hl":""}" style="height:${x.v/mx*100}%"></div><small>${x.d===0?"النهارده":new Date(startOf(x.d)).toLocaleDateString("ar-EG",{weekday:"short"})}</small></div>`).join("")}</div></div>
    <div class="sec"><h2>⚠️ نواقص المخزون (${low.length})</h2><a data-a="tab" data-v="inv" data-x="low">عرض</a></div>
-   <div class="card list">${low.slice(0,4).map(p=>`<button class="li" data-a="editp" data-v="${p.id}"><span class="ico">${p.e}</span><div class="sp sm"><b>${esc(p.n)}</b><div class="xs muted">الحد الأدنى ${p.min}</div></div>${stockTag(p)}</button>`).join("")||`<div class="li sm muted">كل الأصناف متوفرة ✓</div>`}</div>
+   <div class="card list">${low.slice(0,4).map(p=>`<button class="li" data-a="editp" data-v="${p.id}"><span class="ico">${pic(p)}</span><div class="sp sm"><b>${esc(p.n)}</b><div class="xs muted">الحد الأدنى ${p.min}</div></div>${stockTag(p)}</button>`).join("")||`<div class="li sm muted">كل الأصناف متوفرة ✓</div>`}</div>
    <div class="sec"><h2>آخر الطلبات الأونلاين</h2><a data-a="tab" data-v="orders">الكل</a></div>
    <div class="card list">${S.orders.slice(-4).reverse().map(o=>`<button class="li" data-a="aorder" data-v="${o.id}"><span class="av" style="width:38px;height:38px;font-size:15px">${esc(o.name[0])}</span><div class="sp sm"><b>${esc(o.name)}</b><div class="xs muted"><span class="ltr">${o.id}</span> • ${ago(o.t)}</div></div><div style="text-align:left"><b class="sm">${fmt(o.total)}</b><div>${stTag(o.st)}</div></div></button>`).join("")}</div>
    <div class="sec"><h2>إجراءات سريعة</h2></div>
@@ -1286,7 +1462,7 @@ function aPos(){
 }
 function posTiles(){
   const list=S.products.filter(p=>(posCat==="all"||p.c===posCat)&&(!posQ||p.n.includes(posQ)||p.bc.includes(posQ)));
-  return list.map(p=>`<button class="tile" data-a="padd" data-v="${p.id}" style="--c:var(--c-${p.c})">${p.kg?'<span class="kg">وزن</span>':""}<div class="e">${p.e}</div><b>${esc(p.n)}</b><span class="p">${fmt(price(p))}</span><span class="s ${p.st<=p.min?"low":""}">مخزون: ${qty(p,p.st)}</span></button>`).join("")||`<div class="empty" style="grid-column:1/-1">مفيش أصناف</div>`;
+  return list.map(p=>`<button class="tile" data-a="padd" data-v="${p.id}" style="--c:var(--c-${p.c})">${p.kg?'<span class="kg">وزن</span>':""}<div class="e">${pic(p)}</div><b>${esc(p.n)}</b><span class="p">${fmt(price(p))}</span><span class="s ${p.st<=p.min?"low":""}">مخزون: ${qty(p,p.st)}</span></button>`).join("")||`<div class="empty" style="grid-column:1/-1">مفيش أصناف</div>`;
 }
 function posAdd(id,q){
   const p=prod(id);
@@ -1320,7 +1496,7 @@ function scan(v){
 function invSheet(){
   const ps=P_();
   const s=sheet(`<div class="row"><h2 class="sp" style="margin:0">فاتورة #${S.invNo+1}</h2>${ps.lines.length?`<button class="btn sm" data-a="hold">⏸️ تعليق</button><button class="btn sm red" data-a="posclear">مسح</button>`:""}</div>
-   ${ps.lines.length?`<div class="card" style="margin-top:10px;padding:4px 12px">${ps.lines.map((l,i)=>{const p=prod(l.id);return `<div class="inv-l" ${i?'style="border-top:1px solid var(--line)"':""}><span style="font-size:24px">${p.e}</span><div class="n"><b>${esc(p.n)}</b><span class="xs muted">${fmt(price(p))}${p.kg?" / كجم":""}</span></div>${p.kg?`<b class="sm">${qty(p,l.q)}</b><button class="btn sm red" data-a="pq" data-v="${i}" data-x="-99">✕</button>`:`<div class="step"><button data-a="pq" data-v="${i}" data-x="1">+</button><b class="sm">${l.q}</b><button data-a="pq" data-v="${i}" data-x="-1">−</button></div>`}<b class="sm num" style="min-width:66px;text-align:left">${fmt(price(p)*l.q)}</b></div>`}).join("")}</div>
+   ${ps.lines.length?`<div class="card" style="margin-top:10px;padding:4px 12px">${ps.lines.map((l,i)=>{const p=prod(l.id);return `<div class="inv-l" ${i?'style="border-top:1px solid var(--line)"':""}><span style="font-size:24px">${pic(p)}</span><div class="n"><b>${esc(p.n)}</b><span class="xs muted">${fmt(price(p))}${p.kg?" / كجم":""}</span></div>${p.kg?`<b class="sm">${qty(p,l.q)}</b><button class="btn sm red" data-a="pq" data-v="${i}" data-x="-99">✕</button>`:`<div class="step"><button data-a="pq" data-v="${i}" data-x="1">+</button><b class="sm">${l.q}</b><button data-a="pq" data-v="${i}" data-x="-1">−</button></div>`}<b class="sm num" style="min-width:66px;text-align:left">${fmt(price(p)*l.q)}</b></div>`}).join("")}</div>
    <div class="card" style="margin-top:10px"><div class="tot"><span>المجموع</span><b>${fmt(posSub())}</b></div><div class="tot"><span>الخصم <button class="link" data-a="disc">${ps.disc?"تعديل":"+ إضافة خصم"}</button></span><b style="color:var(--sale)">${ps.disc?"- "+fmt(ps.disc):"—"}</b></div><div class="tot big"><span>الإجمالي</span><span>${fmt(posTot())}</span></div></div>
    <button class="btn gold blk" style="margin-top:12px" data-a="pay">💵 دفع ${fmt(posTot())}</button>`:`<div class="empty"><div>🧾</div>الفاتورة فاضية. امسح باركود أو اختار صنف.</div>`}`);
   s.dataset.k="inv";
@@ -1413,13 +1589,13 @@ function aInv(){
 function invList(){
   const f={all:()=>1,low:p=>p.st<=p.min&&p.st>0,out:p=>p.st<=0,offer:p=>p.offer};
   const l=S.products.filter(f[invF]).filter(p=>!invQ||p.n.includes(invQ)||p.bc.includes(invQ));
-  return l.map(p=>`<button class="li" data-a="editp" data-v="${p.id}"><span class="ico">${p.e}</span><div class="sp" style="min-width:0"><b class="sm">${esc(p.n)}</b><div class="xs muted ltr" style="text-align:right">${p.bc}</div><div class="xs"><b style="color:var(--accent)">${fmt(price(p))}</b>${p.offer?` <s class="muted">${fmt0(p.p)}</s>`:""} <span class="muted">• تكلفة ${fmt(p.cost)}</span></div></div>${stockTag(p)}</button>`).join("")||`<div class="empty">مفيش نتايج</div>`;
+  return l.map(p=>`<button class="li" data-a="editp" data-v="${p.id}"><span class="ico">${pic(p)}</span><div class="sp" style="min-width:0"><b class="sm">${esc(p.n)}</b><div class="xs muted ltr" style="text-align:right">${p.bc}</div><div class="xs"><b style="color:var(--accent)">${fmt(price(p))}</b>${p.offer?` <s class="muted">${fmt0(p.p)}</s>`:""} <span class="muted">• تكلفة ${fmt(p.cost)}</span></div></div>${stockTag(p)}</button>`).join("")||`<div class="empty">مفيش نتايج</div>`;
 }
 function editProd(id){
   const p=id?prod(id):{id:0,bc:"",n:"",c:"grocery",p:0,cost:0,e:"🛒",st:0,kg:false,offer:null,min:5};
   const sold=S.sales.filter(s=>s.t>=startOf(29)&&!s.ret).reduce((a,s)=>a+s.items.filter(i=>i.id===p.id).reduce((b,i)=>b+i.q,0),0);
   const s=sheet(`<h2>${id?"تعديل منتج":"منتج جديد"}</h2><div class="col">
-   ${id?`<div class="card row"><span style="font-size:40px">${p.e}</span><div class="sp"><b>${esc(p.n)}</b><div class="xs muted">اتباع ${qty(p,r2(sold))} في آخر 30 يوم</div></div>${stockTag(p)}</div>
+   ${id?`<div class="card row"><span style="font-size:40px">${pic(p)}</span><div class="sp"><b>${esc(p.n)}</b><div class="xs muted">اتباع ${qty(p,r2(sold))} في آخر 30 يوم</div></div>${stockTag(p)}</div>
    <div><label class="lbl">الباركود (امسح باركود المنتج الحقيقي)</label><input id="e_bc" class="ltr" value="${esc(p.bc)}" inputmode="numeric"></div>
    <div><span class="lbl">تعديل الرصيد السريع (جرد / توريد)</span><div class="row"><button class="btn" data-adj="-10">-10</button><button class="btn" data-adj="-1">-1</button><input id="e_st" type="number" value="${p.st}" style="text-align:center;font-weight:900;font-size:18px"><button class="btn" data-adj="1">+1</button><button class="btn" data-adj="10">+10</button></div></div>`:
    `<div class="row"><div style="width:80px"><label class="lbl">أيقونة</label><input id="e_e" value="${p.e}" style="text-align:center;font-size:22px"></div><div class="sp"><label class="lbl">اسم المنتج</label><input id="e_n" placeholder="مثلاً: فول مدمس 400 جم"></div></div>
@@ -1470,7 +1646,7 @@ function aReports(){
    ${rp>1?`<div class="card" style="margin-top:12px"><b>المبيعات اليومية</b><div class="bars">${days.map(x=>`<div class="bc"><div class="bar ${x.d===0?"hl":""}" style="height:${x.v/mx*100}%"></div><small>${new Date(startOf(x.d)).getDate()}</small></div>`).join("")}</div></div>`:""}
    <div class="card" style="margin-top:12px"><b>ساعات الذروة</b><div class="bars" style="height:110px">${hours.map((h,i)=>`<div class="bc"><div class="bar ${h===hm?"hl":""}" style="height:${h/hm*100}%"></div><small>${(i+9)%12||12}</small></div>`).join("")}</div></div>
    <div class="card" style="margin-top:12px"><b>المبيعات حسب القسم</b>${cats.map(([k,v])=>{const c=CATS.find(x=>x[0]===k);return `<div style="margin-top:10px"><div class="row sm"><span>${c[2]} ${c[1]}</span><span class="sp"></span><b>${fmt(v)}</b></div><div class="hbar"><i style="width:${v/cm*100}%"></i></div></div>`}).join("")}</div>
-   <div class="card" style="margin-top:12px"><b>أكتر 5 أصناف مبيعاً</b><div class="list">${top.map(([id,v],i)=>{const p=prod(id);return `<div class="li"><b style="width:20px;color:var(--muted)">${i+1}</b><span class="ico">${p.e}</span><span class="sp sm b">${esc(p.n)}</span><b class="sm">${fmt(v)}</b></div>`}).join("")}</div></div>
+   <div class="card" style="margin-top:12px"><b>أكتر 5 أصناف مبيعاً</b><div class="list">${top.map(([id,v],i)=>{const p=prod(id);return `<div class="li"><b style="width:20px;color:var(--muted)">${i+1}</b><span class="ico">${pic(p)}</span><span class="sp sm b">${esc(p.n)}</span><b class="sm">${fmt(v)}</b></div>`}).join("")}</div></div>
    <div class="card" style="margin-top:12px"><b>طرق الدفع والقنوات</b>
     <div style="margin-top:10px"><div class="row sm"><span>💵 كاش</span><span class="sp"></span><b>${fmt(cash)} (${tot?Math.round(cash/tot*100):0}%)</b></div><div class="hbar"><i style="width:${tot?cash/tot*100:0}%"></i></div></div>
     <div style="margin-top:10px"><div class="row sm"><span>💳 فيزا</span><span class="sp"></span><b>${fmt(tot-cash)}</b></div><div class="hbar"><i style="width:${tot?(tot-cash)/tot*100:0}%;background:var(--info)"></i></div></div>
