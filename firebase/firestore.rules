@@ -7,7 +7,7 @@ rules_version = '2';
 //   meta/owner   records who the owner is; once it exists nobody else can become owner
 //   orders/{id}  online orders; customers create/cancel their own, staff move them along
 //
-// Loyalty points (users.pts) can only be changed by staff (added when an order is delivered).
+// Loyalty points (users.pts) can only be added by owner/manager/cashier (when an order is delivered).
 service cloud.firestore {
   match /databases/{database}/documents {
 
@@ -18,6 +18,8 @@ service cloud.firestore {
     function isStaff() { return hasProfile() && myRole() in ['owner', 'manager', 'cashier', 'inventory', 'accountant']; }
     function isOwner() { return hasProfile() && myRole() == 'owner'; }
     function employeeRoles() { return ['manager', 'cashier', 'inventory', 'accountant']; }
+    // only these roles handle online orders and loyalty points (same as the app's "orders" permission)
+    function isOrderStaff() { return hasProfile() && myRole() in ['owner', 'manager', 'cashier']; }
     function okName(d) { return d.name is string && d.name.size() > 0 && d.name.size() <= 60; }
     function changed() { return request.resource.data.diff(resource.data).affectedKeys(); }
 
@@ -57,9 +59,12 @@ service cloud.firestore {
         (request.auth.uid == uid && resource.data.role == 'customer'
           && changed().hasOnly(['name', 'addr', 'email'])
           && okName(request.resource.data))
-        // any employee can update a customer's loyalty points
-        || (isStaff() && resource.data.role == 'customer' && changed().hasOnly(['pts'])
-          && request.resource.data.pts is int && request.resource.data.pts >= 0)
+        // order staff add a customer's loyalty points when an order is delivered
+        // (points only go up, at most 1100 at a time = a 10,000 EGP order + 100 wheel bonus)
+        || (isOrderStaff() && resource.data.role == 'customer' && changed().hasOnly(['pts'])
+          && request.resource.data.pts is int
+          && request.resource.data.pts > resource.data.get('pts', 0)
+          && request.resource.data.pts - resource.data.get('pts', 0) <= 1100)
         // the owner edits his own profile (stays owner)
         || (isOwner() && request.auth.uid == uid && !changed().hasAny(['role']))
         // the owner edits employees (can't turn anyone into owner)
@@ -88,8 +93,10 @@ service cloud.firestore {
         // the customer cancels his own order while it is still new
         (resource.data.uid == request.auth.uid && resource.data.st == 0
           && request.resource.data.st == -1 && changed().hasOnly(['st']))
-        // staff move the order along / reject it; points are marked as given once, on delivery
-        || (isStaff() && changed().hasOnly(['st', 'ptsGiven'])
+        // order staff move the order along / reject it; points are marked as given once, on delivery.
+        // A delivered (3) or cancelled (-1) order is final.
+        || (isOrderStaff() && changed().hasOnly(['st', 'ptsGiven'])
+          && resource.data.st in [0, 1, 2]
           && request.resource.data.st in [-1, 0, 1, 2, 3]
           && (!changed().hasAny(['ptsGiven'])
               || (request.resource.data.ptsGiven == true && request.resource.data.st == 3
