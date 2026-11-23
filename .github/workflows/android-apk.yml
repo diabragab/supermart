@@ -21,11 +21,32 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: "8.9"
+          gradle-version: "8.13"
 
       - name: Build release APK
         working-directory: android
+        env:
+          VERSION_CODE: ${{ github.run_number }}
         run: gradle assembleRelease --no-daemon
+
+      # Google Play bundle (.aab), signed with the private upload key stored in GitHub secrets.
+      # Skipped when the secrets are missing (e.g. in forks).
+      - name: Build signed AAB for Google Play
+        id: aab
+        env:
+          VERSION_CODE: ${{ github.run_number }}
+          KEYSTORE_B64: ${{ secrets.BM_UPLOAD_KEYSTORE_B64 }}
+          BM_KEYSTORE_PASSWORD: ${{ secrets.BM_UPLOAD_KEYSTORE_PASSWORD }}
+          BM_KEY_ALIAS: ${{ secrets.BM_UPLOAD_KEY_ALIAS }}
+          BM_KEY_PASSWORD: ${{ secrets.BM_UPLOAD_KEY_PASSWORD }}
+        run: |
+          if [ -z "$KEYSTORE_B64" ]; then echo "No upload key secret – skipping AAB"; exit 0; fi
+          export BM_KEYSTORE_FILE="$RUNNER_TEMP/upload.jks"
+          echo "$KEYSTORE_B64" | base64 -d > "$BM_KEYSTORE_FILE"
+          (cd android && gradle bundleRelease --no-daemon)
+          rm -f "$BM_KEYSTORE_FILE"
+          cp android/app/build/outputs/bundle/release/app-release.aab "BM-Supermarket-v1.0.${{ github.run_number }}.aab"
+          echo "file=BM-Supermarket-v1.0.${{ github.run_number }}.aab" >> "$GITHUB_OUTPUT"
 
       - name: Rename APK
         run: cp android/app/build/outputs/apk/release/app-release.apk BM-Supermarket-demo.apk
@@ -47,7 +68,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           TAG="${GITHUB_REF_NAME//\//-}-v1.0.${{ github.run_number }}"
-          gh release create "$TAG" BM-Supermarket-demo.apk \
+          gh release create "$TAG" BM-Supermarket-demo.apk ${{ steps.aab.outputs.file }} \
             --target "${{ github.sha }}" --prerelease \
             --title "B&M Supermarket – ${GITHUB_REF_NAME} (build ${{ github.run_number }})" \
             --notes "نسخة تجريبية من فرع ${GITHUB_REF_NAME}."

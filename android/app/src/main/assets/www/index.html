@@ -646,6 +646,7 @@ async function fetchAcc(id){
    Email/Password accounts behind the scenes (<phone>@customers… / <username>@staff…),
    which works on the free Spark plan. Role + profile live in Firestore users/{uid}. */
 const PROD=!!(CFG.projectId&&CFG.apiKey&&CFG.auth!==false);
+const PRIVACY_URL=CFG.privacyUrl||"https://diabragab.github.io/supermart/privacy.html";
 const DOM_C="customers.bm-market.app",DOM_S="staff.bm-market.app";
 const STAFF_ROLES=["owner","manager","cashier","inventory","accountant"];
 let memPw=null,OWNER_FREE=false;
@@ -894,7 +895,7 @@ function loginView(){
     ${reg&&PROD?`<div><label class="lbl">تأكيد كلمة السر</label><input id="l_pass2" type="password" placeholder="اكتبها تاني"></div>`:""}
     <button class="btn pri blk" data-a="${reg?"register":"login"}">${reg?"إنشاء الحساب":"دخول"}</button>
    </form>
-   ${reg?`<p class="xs muted" style="margin:10px 0 0">التسجيل هنا للعملاء فقط. حسابات الموظفين بيعملها المدير من لوحة التحكم.</p>`:PROD?`<p class="xs muted" style="margin:10px 0 0">الموظفين: ادخل باسم المستخدم اللي المدير عملهولك.</p>${OWNER_FREE?`<button class="btn gold blk" style="margin-top:10px" data-a="ownersetup">👑 إعداد حساب المالك (أول مرة بس)</button>`:""}`:`
+   ${reg?`<p class="xs muted" style="margin:10px 0 0">التسجيل هنا للعملاء فقط. حسابات الموظفين بيعملها المدير من لوحة التحكم.</p><p class="xs muted" style="margin:6px 0 0">بإنشاء الحساب إنت موافق على <a href="${PRIVACY_URL}" style="color:var(--pri)">سياسة الخصوصية</a>.</p>`:PROD?`<p class="xs muted" style="margin:10px 0 0">الموظفين: ادخل باسم المستخدم اللي المدير عملهولك.</p>${OWNER_FREE?`<button class="btn gold blk" style="margin-top:10px" data-a="ownersetup">👑 إعداد حساب المالك (أول مرة بس)</button>`:""}`:`
    <div class="demo"><div class="xs b muted">حسابات تجريبية للعرض (اضغط للدخول):</div>
     <button data-a="quick" data-v="admin">👑 <b>المالك / الأدمن</b><span class="sp"></span><span class="ltr muted xs">admin / 1234</span></button>
     <button data-a="quick" data-v="cashier">🧾 <b>كاشير</b><span class="sp"></span><span class="ltr muted xs">cashier / 1234</span></button>
@@ -1051,7 +1052,31 @@ function custProfile(){
    <div class="sec"><h2>عناويني</h2><a data-a="addaddr">+ إضافة</a></div>
    <div class="card list">${c.addr.map(a=>`<div class="li sm">📍 ${esc(a)}</div>`).join("")}</div>
    ${themeCard()}
-   <button class="btn red blk" style="margin-top:14px" data-a="logout">تسجيل الخروج</button></main>`;
+   <button class="btn red blk" style="margin-top:14px" data-a="logout">تسجيل الخروج</button>
+   <div class="card list menu" style="margin-top:14px"><a class="li sm" href="${PRIVACY_URL}"><span class="ico">🔒</span><b class="sp">سياسة الخصوصية</b><span>←</span></a><button class="li sm" data-a="delacct" style="color:var(--sale)"><span class="ico">🗑️</span><b class="sp">حذف حسابي نهائياً</b><span>←</span></button></div></main>`;
+}
+/* Google Play: customers can delete their own account (Firebase Auth user + Firestore users/{uid}) */
+function delAcctSheet(){
+  const c=me();if(!c)return;
+  const s=sheet(`<h2>حذف الحساب نهائياً</h2><p class="sm muted">هيتمسح حسابك وبياناتك (الاسم، رقم الموبايل، العناوين، نقاط الولاء) ومش هتقدر ترجعه. الطلبات القديمة بتفضل عند المحل لأنها فواتير بيع.</p>
+   ${PROD?`<label class="lbl">اكتب كلمة السر للتأكيد</label><input id="da_p" type="password">`:""}
+   <button class="btn red blk" id="da_ok" style="margin-top:12px">احذف حسابي</button><button class="btn blk" style="margin-top:8px" id="da_no">رجوع</button>`);
+  s.querySelector("#da_no").onclick=closeSheet;
+  s.querySelector("#da_ok").onclick=async()=>{
+    const b=s.querySelector("#da_ok");
+    try{
+      if(PROD){
+        const p=s.querySelector("#da_p").value;if(!p)return toast("اكتب كلمة السر");
+        b.disabled=true;toast("⏳ جاري حذف الحساب…");
+        const j=await authCall("signInWithPassword",{email:idEmail(c.phone),password:p,returnSecureToken:true});setAuth(j);
+        await dbDel("users",S.auth.uid);
+        await authCall("delete",{idToken:S.auth.idToken});
+      }else if(DB.on){b.disabled=true;await dbDel("customers",c.phone)} /* older shared-Firestore demo mode */
+      S.customers=S.customers.filter(x=>x!==c);S.orders=S.orders.filter(o=>o.phone!==c.phone);S.cart=[];
+      if(S.creds)delete S.creds[idEmail(c.phone)];
+      closeSheet();A.logout();toast("✓ اتمسح حسابك");
+    }catch(e){b.disabled=false;toast(aErr(e))}
+  };
 }
 function themeCard(){return `<div class="card row" style="margin-top:14px"><span>🌙</span><b class="sp">الوضع الليلي</b><div class="seg" style="width:150px"><button class="${S.theme==="light"?"on":""}" data-a="theme" data-v="light">فاتح</button><button class="${S.theme==="dark"?"on":""}" data-a="theme" data-v="dark">داكن</button></div></div>`}
 
@@ -1456,6 +1481,7 @@ const A={
     sheet(`<h2>تأكيد رقم الموبايل</h2><p class="sm muted">بعتنالك كود على <span class="ltr">${u}</span> (للعرض: الكود هو <b>1234</b>)</p><input id="otp" inputmode="numeric" class="ltr" style="text-align:center;font-size:24px;letter-spacing:10px" maxlength="4"><button class="btn pri blk" style="margin-top:12px" id="otpok">تأكيد</button>`).querySelector("#otpok").onclick=()=>{if($("#otp").value!=="1234")return toast("الكود غلط");const nc={phone:u,pass:p,name:n,addr:["القاهرة – عنوان تجريبي"],pts:50,since:Date.now()};S.customers.push(nc);markDirty(nc);closeAll();loginMode="login";doLogin(u,p);toast("🎉 أهلاً بيك! هدية 50 نقطة")}},
   guest:()=>{guest=true;R={tab:"home"};S.session=null;render()},
   tologin:()=>{guest=false;S.session=null;R={tab:"login"};loginMode="login";render()},
+  delacct:()=>delAcctSheet(),
   logout:()=>{guest=false;S.session=null;S.auth=null;memPw=null;save();R={tab:"login"};hist.length=0;closeAll();render()},
   theme:v=>{S.theme=v;render()},
   prod:v=>prodSheet(+v),

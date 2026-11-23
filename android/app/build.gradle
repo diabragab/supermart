@@ -4,14 +4,15 @@ plugins {
 
 android {
     namespace 'com.bm.supermarket'
-    compileSdk 34
+    compileSdk 36
 
     defaultConfig {
         applicationId "com.bm.supermarket"
         minSdk 23
-        targetSdk 34
-        versionCode 1
-        versionName "1.0-demo"
+        targetSdk 36
+        // CI passes the build number, so every upload to Google Play gets a higher versionCode
+        versionCode((System.getenv("VERSION_CODE") ?: "1").toInteger())
+        versionName "1.0." + (System.getenv("VERSION_CODE") ?: "0")
     }
 
     signingConfigs {
@@ -24,6 +25,15 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
+        // Google Play upload key. Only exists in CI (GitHub secrets), never in git.
+        if (System.getenv("BM_KEYSTORE_FILE")) {
+            upload {
+                storeFile file(System.getenv("BM_KEYSTORE_FILE"))
+                storePassword System.getenv("BM_KEYSTORE_PASSWORD")
+                keyAlias System.getenv("BM_KEY_ALIAS")
+                keyPassword System.getenv("BM_KEY_PASSWORD")
+            }
+        }
     }
 
     buildTypes {
@@ -32,7 +42,8 @@ android {
         }
         release {
             minifyEnabled false
-            signingConfig signingConfigs.demo
+            // AAB for Google Play is signed with the upload key; APKs for testing keep the demo key
+            signingConfig System.getenv("BM_KEYSTORE_FILE") ? signingConfigs.upload : signingConfigs.demo
         }
     }
     compileOptions {
