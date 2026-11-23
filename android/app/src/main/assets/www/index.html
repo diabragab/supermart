@@ -650,6 +650,7 @@ const DOM_C="customers.bm-market.app",DOM_S="staff.bm-market.app";
 const STAFF_ROLES=["owner","manager","cashier","inventory","accountant"];
 let memPw=null,OWNER_FREE=false;
 if(PROD&&S.acct!=="fb"){S.users=[];S.customers=[];S.session=null;S.auth=null;S.creds={};S.acct="fb";save()} /* drop demo accounts once */
+if(PROD&&S.session&&S.session.offline&&!S.auth){S.session=null;save()} /* offline password is kept in memory only → after a restart sign in again (works offline too) */
 const idEmail=id=>{id=String(id||"").trim().toLowerCase().replace(/\s/g,"");if(id.includes("@"))return id;if(/^01\d{9}$/.test(id))return id+"@"+DOM_C;return id+"@"+DOM_S};
 const AERR={EMAIL_EXISTS:"الحساب ده متسجل قبل كده",EMAIL_NOT_FOUND:"الحساب ده مش موجود",INVALID_PASSWORD:"كلمة السر غلط",INVALID_LOGIN_CREDENTIALS:"رقم الموبايل/اسم المستخدم أو كلمة السر غلط",USER_DISABLED:"الحساب ده موقوف",TOO_MANY_ATTEMPTS_TRY_LATER:"محاولات كتير غلط – استنى شوية وجرّب تاني",WEAK_PASSWORD:"كلمة السر ضعيفة – 6 حروف على الأقل",INVALID_EMAIL:"اسم المستخدم مش صحيح",MISSING_PASSWORD:"اكتب كلمة السر",OPERATION_NOT_ALLOWED:"الدخول بكلمة السر مش مفعّل في Firebase (Authentication → Email/Password)",CONFIGURATION_NOT_FOUND:"Firebase Authentication مش متفعّل في المشروع",PERMISSION_DENIED:"مش مسموح بالعملية دي (راجع قواعد Firestore)",API_KEY_INVALID:"مفتاح Firebase (apiKey) غلط في config.js"};
 const isNet=e=>e&&(e.name==="AbortError"||e instanceof TypeError);
@@ -1420,7 +1421,7 @@ const A={
     sheet(`<h2>تأكيد رقم الموبايل</h2><p class="sm muted">بعتنالك كود على <span class="ltr">${u}</span> (للعرض: الكود هو <b>1234</b>)</p><input id="otp" inputmode="numeric" class="ltr" style="text-align:center;font-size:24px;letter-spacing:10px" maxlength="4"><button class="btn pri blk" style="margin-top:12px" id="otpok">تأكيد</button>`).querySelector("#otpok").onclick=()=>{if($("#otp").value!=="1234")return toast("الكود غلط");const nc={phone:u,pass:p,name:n,addr:["القاهرة – عنوان تجريبي"],pts:50,since:Date.now()};S.customers.push(nc);markDirty(nc);closeAll();loginMode="login";doLogin(u,p);toast("🎉 أهلاً بيك! هدية 50 نقطة")}},
   guest:()=>{guest=true;R={tab:"home"};S.session=null;render()},
   tologin:()=>{guest=false;S.session=null;R={tab:"login"};loginMode="login";render()},
-  logout:()=>{guest=false;S.session=null;S.auth=null;memPw=null;R={tab:"login"};hist.length=0;closeAll();render()},
+  logout:()=>{guest=false;S.session=null;S.auth=null;memPw=null;save();R={tab:"login"};hist.length=0;closeAll();render()},
   theme:v=>{S.theme=v;render()},
   prod:v=>prodSheet(+v),
   addcart:(v,b)=>{const p=prod(+v);if(p.kg)return prodSheet(p.id);const r=b.getBoundingClientRect();if(addCart(p.id,1)!==false)flyToCart(p.e,r)},
